@@ -196,10 +196,31 @@
   text-wrap: pretty;
 }
 
+/* Up to three chips (group, style, stance) and two buttons share a card that
+   can be 320px wide, and chips do not break inside: chips wrap among
+   themselves, and the actions move to their own line as a block rather than
+   pushing out of the card. margin-top: auto keeps the footers of one row level. */
 .cardFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.cardChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cardActions {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-left: auto;
 }
 
 .chip {

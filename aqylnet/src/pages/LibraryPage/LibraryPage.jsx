@@ -337,41 +337,44 @@ export default function LibraryPage({
               </div>
               <p className={styles.cardQuote}>«{p.thinking}»</p>
               <div className={styles.cardFoot}>
-                {p.group && <span className={styles.chip} title={GROUP_HINTS[p.group]}>{groupLabel(p.group)}</span>}
-                {p.style && <span className={styles.chip}>{p.style}</span>}
-                {p.stance && <span className={styles.chip}>{p.stance}</span>}
-                <span className={styles.headSpacer} />
-                <button
-                  className={styles.btnAdd}
-                  onClick={() => onAddToProject(p.id)}
-                  disabled={addingPersonaId === p.id}
-                  title={hasActiveProject ? 'Добавить в текущий проект' : 'Нет активного проекта — откроется настройка новой симуляции'}
-                >
-                  {addingPersonaId === p.id ? '…' : '+ В группу'}
-                </button>
-                <div className={styles.kebabWrap}>
+                <div className={styles.cardChips}>
+                  {p.group && <span className={styles.chip} title={GROUP_HINTS[p.group]}>{groupLabel(p.group)}</span>}
+                  {p.style && <span className={styles.chip}>{p.style}</span>}
+                  {p.stance && <span className={styles.chip}>{p.stance}</span>}
+                </div>
+                <div className={styles.cardActions}>
                   <button
-                    className={styles.kebab}
-                    aria-label="Ещё действия"
-                    aria-expanded={menuOpenId === p.id}
-                    onClick={() => setMenuOpenId(menuOpenId === p.id ? null : p.id)}
+                    className={styles.btnAdd}
+                    onClick={() => onAddToProject(p.id)}
+                    disabled={addingPersonaId === p.id}
+                    title={hasActiveProject ? 'Добавить в текущий проект' : 'Нет активного проекта — откроется настройка новой симуляции'}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="19" cy="12" r="1.7" /></svg>
+                    {addingPersonaId === p.id ? '…' : '+ В группу'}
                   </button>
-                  {menuOpenId === p.id && (
-                    <div className={styles.menu} role="menu">
-                      <button role="menuitem" onClick={() => { setMenuOpenId(null); onSelectPersona(i); }}>Профиль</button>
-                      <button role="menuitem" onClick={() => handleEdit(p)}>Редактировать</button>
-                      <button
-                        role="menuitem"
-                        className={styles.menuDanger}
-                        onClick={(e) => handleDelete(e, p.id)}
-                        disabled={deletingId === p.id}
-                      >
-                        {deletingId === p.id ? 'Удаление…' : 'Удалить'}
-                      </button>
-                    </div>
-                  )}
+                  <div className={styles.kebabWrap}>
+                    <button
+                      className={styles.kebab}
+                      aria-label="Ещё действия"
+                      aria-expanded={menuOpenId === p.id}
+                      onClick={() => setMenuOpenId(menuOpenId === p.id ? null : p.id)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="19" cy="12" r="1.7" /></svg>
+                    </button>
+                    {menuOpenId === p.id && (
+                      <div className={styles.menu} role="menu">
+                        <button role="menuitem" onClick={() => { setMenuOpenId(null); onSelectPersona(i); }}>Профиль</button>
+                        <button role="menuitem" onClick={() => handleEdit(p)}>Редактировать</button>
+                        <button
+                          role="menuitem"
+                          className={styles.menuDanger}
+                          onClick={(e) => handleDelete(e, p.id)}
+                          disabled={deletingId === p.id}
+                        >
+                          {deletingId === p.id ? 'Удаление…' : 'Удалить'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </article>
