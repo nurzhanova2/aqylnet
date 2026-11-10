@@ -1,0 +1,14 @@
+{
+  "name": "aqylnet-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:api": "node --test api/*.test.mjs",
+    "test:security": "node --test security/*.test.mjs",
+    "test:e2e": "node --test --test-concurrency=1 e2e/*.test.mjs"
+  },
+  "devDependencies": {
+    "pg": "^8.22.0",
+    "playwright": "^1.61.1"
+  }
+}
