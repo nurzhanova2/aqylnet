@@ -1,0 +1,44 @@
+{
+  "name": "aqylnet-backend",
+  "version": "1.0.0",
+  "description": "AqylNet Multi-Agent Feedback Engine — Backend API",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "npm run typecheck && tsc -p tsconfig.build.json && npm run build:seed",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/server.js",
+    "test:unit": "tsx --test src/**/*.test.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force && tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "build:seed": "tsc prisma/seed.ts --outDir dist --module commonjs --target ES2022 --esModuleInterop --skipLibCheck --strict"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "mammoth": "^1.12.0",
+    "multer": "^2.2.0",
+    "openai": "^6.49.0",
+    "pdf-parse": "^1.1.1",
+    "prisma": "^5.22.0",
+    "zod": "^4.6.7"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
