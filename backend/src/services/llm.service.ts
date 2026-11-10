@@ -842,6 +842,24 @@ function toPositives(value: unknown): { text: string; by: string }[] {
     .filter((p) => p.text.length > 0);
 }
 
+// A remark about the document is not text for it. Observed on 10.11.2026: an
+// «добавлено» fragment read «В документе отсутствуют конкретные механизмы
+// защиты…, что требует проведения парламентских слушаний» — a recommendation
+// presented as a paragraph to paste in. Narrow on purpose: legal text
+// legitimately opens with «Необходимо обеспечить…», so only absence and
+// «add this» remarks match. \p{L} lookarounds, not \b: \b is ASCII-only in JS.
+const META_REMARK = new RegExp(
+  '^(?:в\\s+(?:данном\\s+)?(?:документе|тексте)(?!\\p{L})[^.]{0,60}?(?:отсутству|нет(?!\\p{L})|не\\s+(?:указ|содерж|раскры|привед|описан|упомина|говорит))'
+  + '|(?:документ|текст)(?:\\s+документа)?\\s+не\\s+(?:содерж|указ|раскры|описыва|объясня|упомина)'
+  + '|(?:необходимо|следует|нужно|рекомендуется|стоит|требуется)\\s+(?:добавить|дополнить|включить|предоставить|привести|раскрыть|указать\\s+в\\s+документе|уточнить\\s+в\\s+документе))',
+  'iu',
+);
+
+/** A fragment that talks about the document instead of being part of it. */
+export function isMetaRemark(text: string): boolean {
+  return META_REMARK.test(text.trim());
+}
+
 function toAltParagraphs(value: unknown): { tag: string; text: string }[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -853,7 +871,14 @@ function toAltParagraphs(value: unknown): { tag: string; text: string }[] {
       // as unchanged or edited — the page colours unknown tags separately.
       return { tag: tag || 'фрагмент', text: stripStrayForeignScript(text) };
     })
-    .filter((a) => a.text.length > 0);
+    .filter((a) => a.text.length > 0)
+    // «без изм.» is checked against the document by reportTrust; a proposed
+    // fragment that is only a remark about the document is dropped, and said so.
+    .filter((a) => {
+      if (a.tag === 'без изм.' || !isMetaRemark(a.text)) return true;
+      console.warn(`[LLM] generateDiscussionReport: dropped a «${a.tag}» fragment that is a remark about the document: «${a.text.slice(0, 80)}…»`);
+      return false;
+    });
 }
 
 export async function generateDiscussionReport(
@@ -900,6 +925,12 @@ ${intendedMessages.map((m, i) => `${i + 1}. ${m}`).join('\n')}
     {"tag": "добавлено", "text": "новый фрагмент, который стоит добавить в документ по итогам обсуждения"}
   ]
 }
+
+Правила для altParagraphs:
+- каждый text — готовый текст самого документа от лица его автора, который можно вставить в документ без правки;
+- не пиши о документе: «в документе отсутствует…», «в тексте не указано…», «необходимо добавить…», «следует уточнить…» — это рекомендации, их место в recommendations;
+- «добавлено» — сам недостающий фрагмент (например, пояснение для вкладчиков), а не сообщение о том, что его нет;
+- не выдумывай цифры, сроки и меры, которых нет в документе: где их не хватает, сформулируй фрагмент без них.
 
 Все поля обязательны, тексты — на русском языке, основывайся только на реально сказанном в стенограмме, не выдумывай реплики, которых не было.`;
 

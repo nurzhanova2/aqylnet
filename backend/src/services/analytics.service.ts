@@ -4,7 +4,7 @@ import { projectRepository, ProjectPersonaFace, ProjectPersonaRow } from '../rep
 import { discussionRepository } from '../repositories/discussion.repository';
 import { NotFoundError }        from '../utils/errors';
 import { prisma }               from '../config/prisma';
-import { computeOverallScore }  from './llm.service';
+import { computeOverallScore, isMetaRemark } from './llm.service';
 import { textForQuotes }        from './auditQuoteRules';
 import { toTimelineDTO }        from './discussion.service';
 import {
@@ -97,10 +97,15 @@ function reportFields(r: AnalyticsReport) {
     // null (= "no claim checked") rather than leaving it undefined, so the page
     // has one shape to render and an old report does not look like a failed
     // check.
-    altParagraphs:   (r.altParagraphs as AltParagraph[]).map((a) => ({
-      ...a,
-      verified: a.verified ?? null,
-    })),
+    // Reports stored before 10.11.2026 may hold a proposed fragment that is
+    // only a remark about the document («В документе отсутствуют…»); it is
+    // left out on read, as new reports leave it out when written.
+    altParagraphs:   (r.altParagraphs as AltParagraph[])
+      .filter((a) => a.tag === 'без изм.' || !isMetaRemark(a.text))
+      .map((a) => ({
+        ...a,
+        verified: a.verified ?? null,
+      })),
     overallScore:    extras.overallScore,
     scores:          extras.scores,
     issues:          extras.issues,
