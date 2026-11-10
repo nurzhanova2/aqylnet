@@ -1,0 +1,131 @@
+/* «Кому понятен текст» — after «Отчёт — Graphite Green». Inset panels 14px,
+   1px lines, no shadows; the level is a pill whose colour is its state. */
+
+.body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 20px; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.spacer { flex: 1; }
+.mono { font-family: var(--font-mono); }
+.muted { color: var(--text-4); font-size: 13px; margin: 0; }
+.error { color: var(--danger); margin: 0; font-size: 13px; }
+
+.runBtn, .ghostBtn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  font: 500 13px var(--font-ui);
+  cursor: pointer;
+}
+.runBtn { border: 1px solid var(--accent-border); background: transparent; color: var(--accent); }
+.runBtn:hover:not(:disabled) { background: var(--accent-bg); }
+.runBtn:disabled { opacity: 0.6; cursor: progress; }
+.ghostBtn { border: 1px solid var(--line-control); background: transparent; color: var(--text-2); }
+.ghostBtn:hover { border-color: var(--line-strong); color: var(--text); }
+
+.editor { border: 1px solid var(--line-card); border-radius: var(--radius-panel); background: var(--surface-inset); padding: 12px; }
+.editorActions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+
+/* ── Карточки групп ── */
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px; }
+.groupCard { display: flex; flex-direction: column; background: var(--surface-inset); border: 1px solid var(--line-card); border-radius: var(--radius-panel); }
+.groupHead { display: flex; align-items: center; gap: 8px; padding: 16px 16px 0; flex-wrap: wrap; }
+.groupName { font-size: 15px; font-weight: 500; }
+.target { height: 22px; padding: 0 8px; border-radius: var(--radius-pill); border: 1px solid var(--accent-border); color: var(--accent); font-size: 11px; display: inline-flex; align-items: center; }
+.indexRow { display: flex; align-items: baseline; gap: 8px; padding: 12px 16px 4px; flex-wrap: wrap; }
+.indexValue { font-weight: 300; font-size: 32px; line-height: 1.1; letter-spacing: var(--tracking-display); }
+.indexNote { font-size: 12px; color: var(--text-4); }
+.indexCells { padding: 0 16px 12px; }
+.groupStats { margin: 0; padding: 4px 16px 12px; border-top: 1px solid var(--line-card); font-size: 13px; }
+.statRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; border-top: 1px solid var(--line-row); }
+.statRow:first-child { border-top: none; }
+.statRow dt { padding: 6px 0; color: var(--text-3); }
+.statRow dd { margin: 0; padding: 6px 0; font-family: var(--font-mono); color: var(--text-2); text-align: right; }
+
+/* ── Как поняли решение ── */
+.panel { background: var(--surface-inset); border: 1px solid var(--line-card); border-radius: var(--radius-panel); }
+.reference {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 12px 24px;
+  padding: 16px;
+}
+.referenceMain { display: flex; flex-direction: column; gap: 4px; grid-column: 1 / -1; }
+.refLabel { font-size: 12px; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-4); }
+.refLabel .mono { text-transform: none; }
+.refQuote { font-size: 14px; color: var(--text); text-wrap: pretty; }
+.refField { font-size: 13px; color: var(--text-3); }
+.refValue { color: var(--text); }
+.refNone { color: var(--text-5); font-size: 12px; }
+.referenceMissing { padding: 16px; font-size: 13px; color: var(--warn-text); }
+.quoteWarn { color: var(--warn); }
+
+.verdict {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line-row);
+  transition: background 150ms ease;
+}
+.reference + .verdict, .referenceMissing + .verdict { border-top-color: var(--line-card); }
+.verdict:hover { background: #1d2420; }
+.who { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+.whoName { font-size: 13px; font-weight: 500; }
+.whoGroup { font-size: 11px; color: var(--text-4); }
+.answer { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.answerText { font-size: 13px; color: var(--text-2); }
+.extracted { font-family: var(--font-mono); font-size: 11px; color: var(--text-4); }
+.reason { font-size: 12px; color: var(--warn-title); }
+
+/* ── Чего не хватает ── */
+.gapGroup { background: var(--surface-inset); border: 1px solid var(--line-card); border-radius: var(--radius-panel); }
+.gapSum { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; list-style: none; flex-wrap: wrap; }
+.gapSum::-webkit-details-marker { display: none; }
+.gapName { font-size: 15px; font-weight: 500; }
+.gapCount { font-family: var(--font-mono); font-size: 12px; color: var(--text-4); }
+.gapTerms { font-size: 12px; color: var(--text-4); }
+.gapTerms .mono { color: var(--text-2); }
+.gapBody { display: flex; flex-direction: column; border-top: 1px solid var(--line-card); }
+.gapNote { margin: 0; padding: 14px 16px; font-size: 13px; color: var(--text-4); }
+
+.item { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--line-row); }
+.item:first-child { border-top: none; }
+.itemNum { font-family: var(--font-mono); font-size: 12px; color: var(--text-5); padding-top: 2px; }
+.itemBody { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.itemTitle { font-size: 14px; font-weight: 500; text-wrap: pretty; }
+.itemAdd { font-size: 13px; color: var(--text-3); text-wrap: pretty; }
+.addLabel { color: var(--accent); }
+.itemQ { font-size: 12px; font-style: italic; color: var(--text-4); }
+.itemSections { font-family: var(--font-mono); font-size: 11px; color: var(--text-5); }
+.who2 {
+  justify-self: end;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-control);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+}
+/* An item on one persona (stage 2, 04.11.2026): said, not hidden. */
+.who2One { color: var(--warn-title); border-color: var(--warn-border); }
+
+.termsRow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 16px; border-top: 1px solid var(--line-card); }
+.stack > .termsRow { border: 1px solid var(--line-card); border-radius: var(--radius-panel); background: var(--surface-inset); }
+.termsLabel { font-size: 12px; color: var(--text-4); margin-right: 4px; }
+.termChip { height: 24px; padding: 0 10px; border-radius: var(--radius-pill); border: 1px dashed var(--line-strong); color: var(--text-3); font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.termExtra { border-style: dotted; color: var(--text-4); }
+.termCount { font-family: var(--font-mono); color: var(--text-5); }
+.dropped { margin: 0; padding: 0 16px 14px; font-size: 12px; color: var(--text-5); }
+
+@media (max-width: 720px) {
+  .body { padding: 16px; }
+  .verdict { grid-template-columns: minmax(0, 1fr) auto; }
+  .verdict > .answer { grid-column: 1 / -1; grid-row: 2; }
+  .item { grid-template-columns: 24px minmax(0, 1fr); }
+  .who2 { grid-column: 2; justify-self: start; }
+}

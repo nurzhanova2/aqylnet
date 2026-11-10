@@ -1,0 +1,223 @@
+/* «Круглый стол»: стол с документом в центре, участники по кругу снаружи. */
+.scene {
+  position: relative;
+  height: 100%;
+  min-height: 360px;
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+/* Счётчик раунда в углу сцены, а не в центре стола — центр занят документом. */
+.sceneHead {
+  position: absolute;
+  left: 18px;
+  top: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  z-index: 3;
+}
+
+.roundLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-mono);
+  color: var(--text-4);
+}
+
+.replyCount {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.table {
+  position: absolute;
+  left: 21%;
+  right: 21%;
+  top: 28%;
+  bottom: 27%;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-deep);
+}
+
+.tableRing {
+  position: absolute;
+  left: 27%;
+  right: 27%;
+  top: 36%;
+  bottom: 35%;
+  border-radius: 50%;
+  border: 1px solid var(--line-control);
+  pointer-events: none;
+}
+
+/* Место за столом — по одному на участника, тем же индексом, что и кресло. */
+.mat {
+  position: absolute;
+  width: 26px;
+  height: 11px;
+  margin: -5.5px 0 0 -13px;
+  border-radius: 3px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-btn-dark);
+}
+
+.link {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ── Документ в центре стола ── */
+.doc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 118px;
+  padding: 10px 11px 12px;
+  border-radius: 3px;
+  background: var(--surface-raised);
+  border: 1px solid var(--line-control);
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 2;
+}
+
+.docLabel {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: var(--ls-mono);
+  color: var(--text-5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.docRule {
+  height: 2px;
+  width: 46%;
+  border-radius: 1px;
+  background: var(--line-strong);
+}
+
+.docLine {
+  height: 2px;
+  border-radius: 1px;
+  background: var(--line-strong);
+}
+
+/* ── Места участников ── */
+.seat {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+.seatBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.seatName {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.seatDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.seatRole {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.seatRemove {
+  position: absolute;
+  top: -4px;
+  right: 18px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-app);
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  z-index: 2;
+}
+
+.seat:hover .seatRemove,
+.seatRemove:focus-visible { opacity: 1; }
+
+.seatRemove:hover { color: var(--text-primary); border-color: var(--accent-border); }
+
+/* ── Реплика говорящего ── */
+.bubble {
+  position: absolute;
+  /* Anchored outside the 120px seat box, not over it: inside, the bubble
+     covered the speaker's own name and role. */
+  top: 2px;
+  width: 250px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent);
+  background: var(--bg-btn-dark);
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 4;
+  text-align: left;
+}
+
+.bubbleRight { left: calc(100% + 8px); }
+.bubbleLeft  { right: calc(100% + 8px); }
+
+.bubbleKicker {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: var(--ls-mono);
+  color: var(--text-4);
+}
+
+.bubbleText {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-primary);
+  /* Длинные реплики обрезаются: облачко не должно накрыть соседей. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

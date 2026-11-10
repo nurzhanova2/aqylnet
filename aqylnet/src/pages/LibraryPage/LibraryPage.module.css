@@ -1,0 +1,509 @@
+/* LibraryPage — «Библиотека персон» по макету library.spec */
+
+.page {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 32px 16px 56px;
+  background: var(--bg-app);
+  position: relative;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-mono);
+  color: var(--accent);
+}
+
+.headSpacer { flex: 1; }
+
+/* ── Шапка ── */
+.header {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerTitles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-weight: 300;
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-app);
+  min-width: 260px;
+  color: var(--text-faint);
+}
+
+.search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: 400 13px var(--font-ui);
+  outline: none;
+}
+
+.search input::placeholder { color: var(--text-placeholder); }
+
+.btnPrimary {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--accent-solid);
+  color: #fff;
+  font: 500 14px var(--font-ui);
+  box-shadow: var(--shadow-accent);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+.btnGhost {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  color: var(--text-primary);
+  font: 500 13px var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.btnGhost:hover { border-color: var(--accent-border); color: var(--accent); }
+
+/* ── Фильтры ── */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg-body);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  align-self: flex-start;
+}
+
+.filterTab {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 13px var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.filterTab:hover { color: var(--text-primary); }
+
+.filterActive {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* ── Грид карточек ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  transition: border-color 150ms ease;
+}
+
+.card:hover { border-color: var(--border-mid); }
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardAvatarBtn {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  flex: none;
+}
+
+.cardTitles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardName {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cardQuote {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-height: 39px;
+  text-wrap: pretty;
+}
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.btnAdd {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-accent);
+  background: transparent;
+  color: var(--accent);
+  font: 500 12.5px var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.btnAdd:hover:not(:disabled) {
+  background: var(--national-green);
+  color: var(--text-primary);
+  border-color: var(--national-green-edge);
+}
+
+.btnAdd:disabled { opacity: 0.6; cursor: default; }
+
+.kebabWrap { position: relative; }
+
+.kebab {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kebab:hover { color: var(--text-primary); border-color: var(--border-mid); }
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+  min-width: 160px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-panel);
+}
+
+.menu button {
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 8px 10px;
+  border-radius: var(--radius-xs);
+  color: var(--text-primary);
+  font: 400 13px var(--font-ui);
+  cursor: pointer;
+}
+
+.menu button:hover { background: var(--bg-btn-dark); }
+
+.menuDanger { color: var(--pink) !important; }
+
+.empty {
+  padding: 28px 0;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.errorMsg {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-btn-dark);
+  color: var(--pink);
+  font-size: 12.5px;
+}
+
+.successMsg {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--accent-tint);
+  color: var(--accent);
+  font-size: 12.5px;
+}
+
+/* ── Панель формы ── */
+.formBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 12, 9, 0.7);
+  z-index: 60;
+}
+
+.formPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(440px, 100vw);
+  z-index: 61;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-mid);
+  display: flex;
+  flex-direction: column;
+}
+
+.formHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.formBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.formFoot {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: var(--ls-mono);
+  color: var(--accent);
+  margin: 18px 0 8px;
+}
+
+.sectionLabel:first-child { margin-top: 0; }
+
+.fieldLabel {
+  font-size: var(--font-sm2);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-4);
+  margin: 10px 0 4px;
+  text-transform: uppercase;
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  /* Explicit line-height: the shorthand `font` resets it to `normal`, which
+     differs per font and made the row maths below unpredictable. */
+  font: 400 13px/1.45 var(--font-ui);
+}
+
+/* Height is computed rather than left to the `rows` attribute: under the
+   global border-box the browser fits padding + border *inside* the rows
+   height, clipping the text and letting it collide with the next label.
+   --rows comes from the TextArea component (default 3 for any other use). */
+.formTextarea {
+  resize: vertical;
+  display: block;
+  height: calc(var(--rows, 3) * 1.45em + 18px);
+  min-height: calc(2 * 1.45em + 18px);
+  overflow-y: auto;
+}
+
+.formInput::placeholder,
+.formTextarea::placeholder { color: var(--text-placeholder); }
+
+.genderRow {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg-body);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  align-self: flex-start;
+}
+
+.genderOpt {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 12.5px var(--font-ui);
+  cursor: pointer;
+}
+
+.genderActive {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+/* ── Кастомизация внешности ── */
+.lookRow {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.lookPreview { flex: none; }
+
+.lookControls {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.styleRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.styleOpt {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-btn-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+  transition: border-color 150ms ease;
+}
+
+.styleOpt:hover { border-color: var(--border-mid); }
+
+.styleOptActive {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+
+.glassesRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.glassesRow input { accent-color: var(--accent); }
+
+.swatchBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.swatchRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 120ms ease;
+}
+
+.swatch:hover { transform: scale(1.1); }
+
+.swatchActive {
+  border-color: var(--text-primary);
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}

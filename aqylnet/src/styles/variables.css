@@ -1,0 +1,146 @@
+/* AqylNet Design Tokens — Graphite Green
+ *
+ * Тёмный графит, хвойно-зелёный акцент, тонкие заголовки. Теней нет: глубина
+ * задаётся ступенью фона (canvas → inset → surface → raised) и линиями в 1px.
+ * Цвет означает состояние, а не украшает.
+ *
+ * Имена из прежней темы (NBK Heritage) сохранены как псевдонимы и указывают на
+ * новые значения — так 4400 строк CSS-модулей переехали вместе с токенами, без
+ * правки каждого файла. Новый код писать на канонических именах из блоков
+ * «Surfaces / Lines / Text / Accent / Semantic».
+ */
+:root {
+  /* ─── Surfaces (снизу вверх) ──────────────────────────────── */
+  --bg:             #131514;  /* Canvas — фон страницы */
+  --surface-inset:  #161817;  /* поля ввода, вложенные панели, логи */
+  --surface:        #1a1c1b;  /* карточки-секции, активная вкладка шапки */
+  --surface-raised: #1f2220;  /* шапка вложенной таблицы, иконочные плашки */
+
+  /* ─── Lines ───────────────────────────────────────────────── */
+  --line-row:     #222523;  /* разделители строк таблиц и списков */
+  --line-chrome:  #232624;  /* границы боковой панели, шапки, подвала */
+  --line-card:    #262927;  /* рамка карточек */
+  --line-control: #2b2f2d;  /* рамки полей, второстепенных кнопок, чипов */
+  --line-strong:  #3a3f3c;  /* пунктир, нейтральные бейджи */
+
+  /* ─── Text ────────────────────────────────────────────────── */
+  --text:   #ecedeb;  /* заголовки, основной текст, значения */
+  --text-2: #c9cdca;  /* моно-значения, второстепенные кнопки */
+  --text-3: #a3a8a5;  /* описания, пояснения */
+  --text-4: #8d928f;  /* подписи полей, метаданные, неактивная навигация */
+  --text-5: #6d726f;  /* номера строк, заглушки — не для значимого текста */
+
+  /* ─── Accent ──────────────────────────────────────────────── */
+  --accent:          #4fb488;  /* ссылки, активная вкладка, контурные кнопки */
+  --accent-solid:    #3a9a6e;  /* залитые кнопки (белый текст), плашки */
+  --accent-hover:    #7fd3ac;  /* наведение, текст бейджа «готово» */
+  --accent-bg:       #1b2a23;  /* фон активного элемента */
+  --accent-border:   #2e6a50;  /* рамка акцентных элементов */
+
+  /* ─── Semantic ────────────────────────────────────────────── */
+  --warn:        #e3a948;  --warn-title:    #f1c27a;
+  --warn-text:   #c9b48f;  --warn-bg:       #241d12;  --warn-border:    #5a4520;
+  --danger:      #f0857e;  --danger-title:  #f5aaa4;
+  --danger-text: #c9a9a5;  --danger-bg:     #2e1d1b;  --danger-border:  #5a2d29;
+  --special:     #a48bff;
+  --special-text:#b7a6ff;  --special-bg:    #231f3a;  --special-border: #40367a;
+  /* Отсутствие связи — нейтральный серый, не красный: красный за настоящими сбоями */
+  --neutral:     #8d928f;  --neutral-title: #c9cdca;
+  --neutral-text:#a3a8a5;  --neutral-bg:    #1f2220;  --neutral-border: #3a3f3c;
+
+  /* ─── Псевдонимы прежней темы ─────────────────────────────── */
+  /* Фоны */
+  --bg-body:      var(--bg);
+  --bg-app:       var(--bg);
+  --bg-sidebar:   var(--bg);
+  --bg-topbar:    var(--surface);
+  --bg-panel:     var(--surface);
+  --bg-card:      var(--surface);
+  --bg-card-alt:  var(--surface);
+  --bg-deep3:     var(--surface-inset);
+  --bg-btn-dark:  var(--surface-raised);
+  --bg-tag:       var(--surface-raised);
+  --bg-deep:      var(--surface-raised);
+
+  /* Текст */
+  --text-primary:     var(--text);
+  --text-secondary:   var(--text-2);
+  --text-muted:       var(--text-3);
+  --text-dim:         var(--text-3);
+  --text-faint:       var(--text-4);
+  --text-placeholder: var(--text-4);
+
+  /* Акцент */
+  --accent-grad:         var(--accent-solid);  /* градиентов нет */
+  --national-green:      var(--accent-solid);
+  --national-green-edge: var(--accent-border);
+
+  /* Прежнее «золото» — теперь амбровое смысловое */
+  --gold-light: var(--warn-title);
+  --gold-dim:   var(--warn-border);
+
+  /* Границы */
+  --border-faint:  var(--line-row);
+  --border-subtle: var(--line-card);
+  --border-soft:   var(--line-card);
+  --border-mid:    var(--line-control);
+  --border-accent: var(--accent-border);
+
+  /* Заливки состояний */
+  --accent-tint:    var(--accent-bg);
+
+  /* Цвета участников (`dot`) — не тема: они хранятся у персоны в БД hex-значением
+   * и различают людей в сцене и стенограмме. Здесь от прежнего набора осталось
+   * только имя, которое ещё читают CSS-модули. */
+  --pink:     #f472b6;
+
+  /* ─── Скругления ──────────────────────────────────────────── */
+  --radius-xs:   6px;     /* моно-бейджи кодов, кнопка копирования */
+  --radius-sm:   8px;     /* поля ввода, select, иконочные кнопки */
+  --radius-md:   10px;    /* вкладки, пункты навигации */
+  --radius-lg:   12px;    /* карточки-опции, предупреждения в формах */
+  --radius-xl:   14px;    /* вложенные панели, плашки-уведомления */
+  --radius-2xl:  20px;    /* карточки-секции */
+  --radius-pill: 9999px;  /* кнопки, чипы, бейджи статусов, прогресс */
+  --radius-full: 50%;
+
+  --radius-card:  var(--radius-2xl);
+  --radius-panel: var(--radius-xl);
+  --radius-input: var(--radius-sm);
+  --radius-tab:   var(--radius-md);
+
+  /* ─── Тени ────────────────────────────────────────────────── */
+  /* Теней нет. Имена оставлены, чтобы прежние объявления не ломались. */
+  --shadow-panel:     none;
+  --shadow-accent:    none;
+  --shadow-accent-lg: none;
+
+  /* ─── Типографика ─────────────────────────────────────────── */
+  --font-ui:     'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-family: var(--font-ui);
+  --font-mono:   'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --font-serif:  var(--font-ui);  /* серифа в стиле нет */
+  --ls-mono:     0;
+
+  --font-sm2:  12px;
+  --font-lg:   15px;
+  --font-xl:   16px;
+  --font-3xl:  24px;
+  --font-4xl:  32px;
+  --font-display: 36px;
+
+  --leading-display:  1.12;
+  --tracking-display: -0.02em;
+  --tracking-body:    0.01em;
+  --tracking-label:   0.04em;
+
+  /* ─── Отступы ─────────────────────────────────────────────── */
+
+  --page-max:   1280px;
+  --page-pad:   32px;
+  --section-gap: 24px;
+  --control-h:  44px;
+
+  /* ─── Раскладка ───────────────────────────────────────────── */
+  --drawer-w:     420px;
+}

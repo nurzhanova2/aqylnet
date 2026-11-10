@@ -1,0 +1,40 @@
+/* Document fields — Graphite Green: fields 8px, chips as pills, the active
+   chip accent-bg + accent, not a solid fill. */
+
+.grid { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(150px, 0.7fr) minmax(240px, 1.6fr); gap: 12px; align-items: start; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-4);
+}
+.input {
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--line-control);
+  background: var(--surface-inset);
+  color: var(--text);
+  padding: 0 10px;
+  font: inherit;
+  font-size: var(--font-sm2);
+  color-scheme: dark;
+}
+.input:focus { outline: none; border-color: var(--accent); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-control);
+  background: transparent;
+  color: var(--text-3);
+  padding: 6px 12px;
+  font-size: var(--font-sm2);
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--accent-border); color: var(--text-2); }
+.chipOn { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+
+@media (max-width: 720px) {
+  .grid { grid-template-columns: 1fr; }
+}

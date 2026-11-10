@@ -1,0 +1,325 @@
+/* DiscussionPage — экран симуляции по макету simulation.spec */
+
+.page {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg-app);
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+  align-content: flex-start;
+  overflow-y: auto;
+}
+
+/* ── Круглый стол ── */
+.tableSection {
+  flex: 999 1 600px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-mono);
+  color: var(--accent);
+}
+
+.sectionMeta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.headSpacer { flex: 1; }
+
+.btnGhost {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  color: var(--text-primary);
+  font: 500 12.5px var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.btnGhost:hover:not(:disabled) { border-color: var(--accent-border); color: var(--accent); }
+.btnGhost:disabled { opacity: 0.55; cursor: default; }
+
+.btnLaunch {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--accent-solid);
+  color: #fff;
+  font: 500 13px var(--font-ui);
+  cursor: pointer;
+  box-shadow: var(--shadow-accent);
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.btnLaunch:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+.btnLaunch:disabled { opacity: 0.55; cursor: default; }
+
+.errorBox {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-btn-dark);
+  color: var(--pink);
+  font-size: 12.5px;
+}
+
+.stage {
+  position: relative;
+  /* Fills the screen below the header, moderator card and status bar, with
+     floors and ceilings so the table never collapses or stretches absurdly. */
+  height: clamp(380px, calc(100vh - 300px), 780px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+/* Вопрос модератора */
+.moderatorCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.moderatorHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.moderatorInput {
+  margin: 0;
+  min-height: 56px;
+  resize: vertical;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: 400 13.5px/1.5 var(--font-ui);
+  padding: 4px 6px;
+  text-wrap: pretty;
+}
+
+.moderatorInput:not(:read-only):hover,
+.moderatorInput:not(:read-only):focus {
+  border-color: var(--border-mid);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  outline: none;
+}
+
+/* Переключатель модератора (switch по setup.spec) */
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-body);
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-start;
+  transition: all 150ms ease;
+}
+
+.toggleOn {
+  background: var(--accent);
+  border-color: var(--accent);
+  justify-content: flex-end;
+}
+
+.toggleKnob {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.toggleOn .toggleKnob { background: var(--bg); }
+
+/* ── Правая панель ── */
+.rail {
+  flex: 1 1 380px;
+  min-width: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 110px);
+  min-height: 420px;
+}
+
+.railTabs {
+  display: flex;
+  gap: 4px;
+  margin: 12px;
+  padding: 3px;
+  background: var(--bg-body);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.railTab {
+  flex: 1;
+  height: 34px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 13px var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.railTab:hover { color: var(--text-primary); }
+
+.railTabActive {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.roundDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px 8px;
+}
+
+.roundDivider > span:not(.roundDividerLabel) {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.roundDividerLabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: var(--ls-mono);
+  color: var(--accent);
+}
+
+.railContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+}
+
+.railStatus {
+  padding: 24px 0;
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+
+/* Карточка «Итоговый отчёт готов» */
+.reportCard {
+  margin: 12px;
+  padding: 14px;
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  background: rgba(79, 180, 136, .06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reportCardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.reportCardTitle svg { color: var(--accent); flex: none; }
+
+.reportCardText {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reportCardBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent-solid);
+  color: #fff;
+  font: 500 14px var(--font-ui);
+  cursor: pointer;
+  box-shadow: var(--shadow-accent);
+  transition: all 150ms ease;
+}
+
+.reportCardBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+.reportCardBtn:disabled { opacity: 0.55; cursor: default; }
+
+/* ── Футер-статусбар ── */
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  background: var(--bg-deep);
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex: none;
+}
+
+.statusLlm { color: var(--accent); }

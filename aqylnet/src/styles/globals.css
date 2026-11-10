@@ -1,0 +1,71 @@
+@import './variables.css';
+@import './animations.css';
+
+/* Локальные variable-шрифты (@fontsource) — без зависимости от сети */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--bg);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  color: var(--text);
+  letter-spacing: var(--tracking-body);
+}
+
+/* Заголовки — только вес 300: жирные ломают стиль. */
+h1, h2, h3 {
+  font-weight: 300;
+  letter-spacing: var(--tracking-display);
+}
+
+/* Нативные контролы на тёмном фоне (date, number, select) */
+input, select, textarea { color-scheme: dark; }
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-body);
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-border);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Utility: visually hidden */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+}
+
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+}

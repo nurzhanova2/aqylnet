@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="AqylNet">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#1F4A36" stroke-width="1.2"/>
+  <g fill="#36C988">
+    <circle cx="32" cy="10" r="3.4"/>
+    <circle cx="47.56" cy="16.44" r="3.4"/>
+    <circle cx="54" cy="32" r="3.4"/>
+    <circle cx="47.56" cy="47.56" r="3.4"/>
+    <circle cx="32" cy="54" r="3.4"/>
+    <circle cx="16.44" cy="47.56" r="3.4"/>
+    <circle cx="10" cy="32" r="3.4"/>
+    <circle cx="16.44" cy="16.44" r="3.4"/>
+  </g>
+  <path d="M32 21 L34.8 29.2 L43 32 L34.8 34.8 L32 43 L29.2 34.8 L21 32 L29.2 29.2 Z" fill="#C59A3D"/>
+</svg>

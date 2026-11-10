@@ -1,0 +1,206 @@
+/* Header по макетам redesign: лого-знак · AqylNet · разделитель · крошки ·
+   статус · модель · действия; под ним золотая градиентная линия. */
+
+.topbar {
+  min-height: 56px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  background: rgba(7, 20, 15, .94);
+  position: relative;
+  z-index: 30;
+  flex-wrap: wrap;
+}
+
+/* Gold rule — тонкая золотая линия под навигацией */
+.topbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--line-card);
+  pointer-events: none;
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.logoTile {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  /* Deep Forest, not national green: the round-table mark's ring (var(--accent-border))
+     and nodes are drawn for a dark ground — on the mid-green tile the table
+     itself disappeared and the knot read as a loose cluster of dots. Same
+     ground as the app icon in public/favicon.svg. */
+  background: var(--bg-body);
+  border: 1px solid var(--border-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.logoText {
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-subtle);
+  flex: none;
+}
+
+/* Breadcrumbs */
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.crumbWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.crumbSep { color: var(--text-faint); }
+
+.crumbLink {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.crumbLink:hover { color: var(--text-primary); }
+
+.crumbCurrent {
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 420px;
+}
+
+.spacer { flex: 1; }
+
+/* Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statusDone {
+  border: 1px solid var(--border-accent);
+  color: var(--accent);
+}
+
+.statusRun {
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.model {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 0 8px;
+}
+
+.btnPlay {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--accent-solid);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  box-shadow: var(--shadow-accent);
+  transition: all 150ms ease;
+}
+
+.btnPlay:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+.btnPlay:disabled { opacity: 0.55; cursor: default; }
+
+.btnFinish {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.btnFinish:hover { border-color: var(--accent-border); color: var(--accent); }
+
+.btnIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms ease;
+}
+
+.btnIcon:hover { border-color: var(--accent-border); color: var(--accent); }

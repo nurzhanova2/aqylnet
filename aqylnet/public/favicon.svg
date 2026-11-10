@@ -1,0 +1,22 @@
+<!--
+  AqylNet tab mark — the round-table emblem on the Deep Forest ground.
+  Keep in sync with src/assets/logo/aqylnet-logo-round-table-app-icon.svg
+  and the inline component src/components/NbkLogo/NbkLogo.jsx.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="AqylNet">
+  <rect x="0.5" y="0.5" width="63" height="63" rx="14" fill="#040C09" stroke="#1A3528"/>
+  <g transform="translate(9.6 9.6) scale(0.7)">
+    <circle cx="32" cy="32" r="22" fill="none" stroke="#1F4A36" stroke-width="1.6"/>
+    <g fill="#36C988">
+      <circle cx="32" cy="10" r="3.8"/>
+      <circle cx="47.56" cy="16.44" r="3.8"/>
+      <circle cx="54" cy="32" r="3.8"/>
+      <circle cx="47.56" cy="47.56" r="3.8"/>
+      <circle cx="32" cy="54" r="3.8"/>
+      <circle cx="16.44" cy="47.56" r="3.8"/>
+      <circle cx="10" cy="32" r="3.8"/>
+      <circle cx="16.44" cy="16.44" r="3.8"/>
+    </g>
+    <path d="M32 21 L34.8 29.2 L43 32 L34.8 34.8 L32 43 L29.2 34.8 L21 32 L29.2 29.2 Z" fill="#C59A3D"/>
+  </g>
+</svg>

@@ -1,0 +1,607 @@
+/* SetupPage — «Новая симуляция» по макету setup.spec */
+
+.page {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 40px 16px 56px;
+  background: var(--bg-app);
+}
+
+.inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ── Заголовок ── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--ls-mono);
+  color: var(--accent);
+}
+
+.title {
+  font-weight: 300;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 44px;
+  line-height: 1.05;
+  letter-spacing: -0.8px;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 560px;
+}
+
+/* ── Секции ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  font-weight: 300;
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+}
+
+.counter {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.headSpacer { flex: 1; }
+
+.headActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Документ и вопрос ── */
+.docGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: 16px;
+}
+
+.docCol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.segment {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--bg-body);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  align-self: flex-start;
+}
+
+.segmentBtn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 13px var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.segmentBtn:hover { color: var(--text-primary); }
+
+.segmentActive {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.dropzone {
+  flex: 1;
+  min-height: 170px;
+  border: 1px dashed var(--border-mid);
+  border-radius: var(--radius-panel);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.dropTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.dropMeta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.btnSecondary {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  color: var(--text-primary);
+  font: 500 13px var(--font-ui);
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.btnSecondary:hover:not(:disabled) { border-color: var(--accent-border); color: var(--accent); }
+.btnSecondary:disabled { opacity: 0.55; cursor: default; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.fieldLabel {
+  font-size: var(--font-sm2);
+  color: var(--text-4);
+  display: flex;
+  gap: 6px;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.fieldHint { color: var(--text-faint); }
+
+.textarea {
+  flex: 1;
+  min-height: 160px;
+  resize: vertical;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font: 400 13.5px/1.5 var(--font-ui);
+}
+
+.textarea::placeholder { color: var(--text-placeholder); }
+
+.textareaTall { min-height: 212px; }
+
+/* ── Участники ── */
+.peopleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  gap: 8px;
+}
+
+.personCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.personInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.personTop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.personName {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.personRole {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stanceLabel { display: flex; }
+
+.stanceSelect {
+  height: 28px;
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-accent);
+  background: var(--bg-app);
+  color: var(--text-secondary);
+  font: 400 12px var(--font-ui);
+  max-width: 100%;
+}
+
+.personRemove {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.personRemove:hover { color: var(--text-primary); }
+
+.others {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.othersToggle {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--text-muted);
+  font: 500 12.5px var(--font-ui);
+  cursor: pointer;
+}
+
+.othersToggle:hover { color: var(--text-primary); }
+
+.othersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+  gap: 6px;
+}
+
+.otherCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 150ms ease;
+}
+
+.otherCard:hover:not(:disabled) { border-color: var(--border-mid); }
+.otherCard:disabled { opacity: 0.5; cursor: default; }
+
+.otherInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.otherInfo strong {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.otherInfo small {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.otherPlus {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ── Параметры ── */
+.params {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 4px 20px;
+}
+
+.paramRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 8px 24px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.paramRowLast { border-bottom: none; }
+
+.paramInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.paramName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.paramDesc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.modeSelect {
+  height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font: 500 13px var(--font-ui);
+  justify-self: start;
+  min-width: 220px;
+}
+
+.roundsRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.range {
+  flex: 1;
+  max-width: 320px;
+  accent-color: var(--accent);
+}
+
+.roundsValue {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  min-width: 24px;
+}
+
+/* Переключатель */
+.toggle {
+  justify-self: start;
+  width: 44px;
+  height: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-body);
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-start;
+  transition: all 150ms ease;
+}
+
+.toggleOn {
+  background: var(--accent);
+  border-color: var(--accent);
+  justify-content: flex-end;
+}
+
+.toggleKnob {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.toggleOn .toggleKnob { background: var(--bg); }
+
+.errorBox {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-btn-dark);
+  color: var(--pink);
+  font-size: 13px;
+}
+
+/* Same shape as .errorBox, gold rather than pink: a truncated document is a
+   warning the user must see, not a failure. */
+.noticeBox {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-dim);
+  background: var(--bg-btn-dark);
+  color: var(--gold-light);
+  font-size: 13px;
+}
+
+/* ── Итоговая строка ── */
+.footerRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.footerMeta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.btnLaunch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 22px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent-solid);
+  color: #fff;
+  font: 500 14px var(--font-ui);
+  cursor: pointer;
+  box-shadow: var(--shadow-accent);
+  transition: all 150ms ease;
+}
+
+.btnLaunch:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+.btnLaunch:disabled { opacity: 0.55; cursor: default; }
+
+/* ── Ключевые сообщения автора (intended message) ── */
+
+.intended {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-mid);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intendedHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intendedNote {
+  margin: 0 0 2px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-faint);
+  max-width: 62ch;
+}
+
+.intendedRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intendedNum {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font: 500 11px/1 var(--font-ui);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font: 400 13.5px/1.4 var(--font-ui);
+}
+
+.input::placeholder { color: var(--text-placeholder); }
+.input:focus-visible { outline: none; border-color: var(--accent-border); }
+
+.intendedRemove {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.intendedRemove:hover:not(:disabled) { border-color: var(--accent-border); color: var(--accent); }
+.intendedRemove:disabled { opacity: 0.35; cursor: default; }
+
+/* ── Готовые панели ── */
+
+.panels {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.panelsLabel {
+  font-size: var(--font-sm2);
+  color: var(--text-4);
+  margin-right: 2px;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.panelBtn {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border-mid);
+  background: var(--bg-tag);
+  color: var(--text-secondary);
+  font: 500 12px/1 var(--font-ui);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.panelBtn:hover { border-color: var(--accent-border); color: var(--accent); }

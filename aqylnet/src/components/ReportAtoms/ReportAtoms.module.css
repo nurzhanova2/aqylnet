@@ -1,0 +1,60 @@
+/* Shared pieces of the report page — Graphite Green (tokens: styles/variables.css). */
+
+.dot { flex: none; box-sizing: border-box; display: inline-block; }
+.dot_round  { width: 7px; height: 7px; border-radius: 50%; background: var(--dot); }
+.dot_square { width: 7px; height: 7px; border-radius: 2px; background: var(--dot); }
+.dot_dash   { width: 10px; height: 2px; border-radius: 1px; background: var(--dot); }
+.dot_open   { width: 7px; height: 7px; border-radius: 50%; border: 1.5px dashed var(--dot); background: transparent; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.cells { display: flex; gap: 2px; }
+.cell { flex: 1; border-radius: var(--radius-pill); }
+
+.track { display: block; flex: 1; border-radius: var(--radius-pill); background: var(--line-card); overflow: hidden; min-width: 40px; }
+.fill { display: block; height: 100%; border-radius: var(--radius-pill); }
+
+.banner {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid;
+  border-radius: var(--radius-panel);
+}
+.banner > svg { flex: 0 0 18px; margin-top: 1px; }
+.bannerBody { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bannerTitle { font-size: 14px; font-weight: 500; }
+.bannerText { font-size: 13px; line-height: 1.5; }
+
+.banner_mid  { background: var(--warn-bg);    border-color: var(--warn-border);    color: var(--warn-text); }
+.banner_mid .bannerTitle  { color: var(--warn-title); }
+.banner_good { background: var(--accent-bg);  border-color: var(--accent-border);  color: var(--text-2); }
+.banner_good .bannerTitle { color: var(--accent-hover); }
+.banner_low  { background: var(--danger-bg);  border-color: var(--danger-border);  color: var(--danger-text); }
+.banner_low .bannerTitle  { color: var(--danger-title); }
+.banner_none { background: var(--neutral-bg); border-color: var(--neutral-border); color: var(--neutral-text); }
+.banner_none .bannerTitle { color: var(--neutral-title); }
+
+.chev { flex: none; transition: transform 150ms ease; }
+details[open] > summary .chev { transform: rotate(90deg); }
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chev { transition: none; }
+}
