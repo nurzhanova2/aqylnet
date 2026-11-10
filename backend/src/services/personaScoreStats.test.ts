@@ -38,9 +38,10 @@ describe('groups apart: the mean matches no group', () => {
     assert.equal(top.high.quote, 'цитата 4-0');
   });
 
-  test('a section where the groups agree has gap 0 and ranks below', () => {
+  test('a section where the groups agree (gap 0) is not a divergence at all', () => {
     const tops = topDivergences(ps, sections);
-    assert.deepEqual(tops.map((t) => [t.order, t.gap]), [[0, 7], [1, 0]]);
+    assert.deepEqual(tops.map((t) => [t.order, t.gap]), [[0, 7]]);
+    assert.ok(tops.every((t) => t.high.group !== t.low.group), 'a divergence compares two different groups');
   });
 });
 

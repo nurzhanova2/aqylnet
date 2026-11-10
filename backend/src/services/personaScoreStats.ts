@@ -188,7 +188,9 @@ export function topDivergences(
   for (const s of sections) {
     for (const key of keys) {
       const c = sectionCell(personas, s.order, key);
-      if (c.gap === null) continue;
+      // Groups that agree are not a divergence: with gap 0 «high» and «low»
+      // were the same group, and the report read «население 10, население 10».
+      if (c.gap === null || c.gap === 0) continue;
       const present = GROUPS.filter((g) => c.byGroup[g] !== null);
       const high = present.reduce((a, b) => (c.byGroup[b]! > c.byGroup[a]! ? b : a));
       const low = present.reduce((a, b) => (c.byGroup[b]! < c.byGroup[a]! ? b : a));
