@@ -1,0 +1,437 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Persona ─────────────────────────────────────────────────
+
+model Persona {
+  id            Int      @id @default(autoincrement())
+  name          String
+  role          String
+  gender        String
+  age           String
+  dot           String
+  seatL         String
+  seatT         String
+  thinking      String   @db.Text
+  style         String
+  criticality   String
+  behaviorModel String   @map("model")
+  interests     String[]
+  reasoning     String   @db.Text
+  avatarIdx     Int
+  // UI-атрибут: параметры чиби-аватара
+  // { skin: '#hex', hair: '#hex', outfit: '#hex', style: 'short'|'long'|'bob'|'bun'|'spiky', glasses?: boolean }
+  look          Json?
+
+  // ── Группа 1: Демография ──────────────────────────────────────
+  city      String @default("")
+  education String @default("")
+
+  // ── Группа 2: Профессия ───────────────────────────────────────
+  industry     String @default("")
+  employerType String @default("")
+  income       String @default("")
+
+  // ── Группа 3: Психологический профиль ────────────────────────
+  openness       String @default("")
+  decisionMaking String @default("")
+
+  // ── Группа 4: Позиция по теме ─────────────────────────────────
+  stance            String @default("")
+  priority          String @default("") @db.Text
+  fears             String @default("") @db.Text
+  personalSituation String @default("") @db.Text
+
+  // ── Группа 5: Стиль речи (для LLM-промпта) ───────────────────
+  speechTone     String @default("")
+  argumentation  String @default("")
+  responseLength String @default("Средний")
+  typicalPhrases String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Role in forming expectations (A1 stage 1), not level of knowledge:
+  // population decides for itself, business sets prices / buys / invests,
+  // experts interpret NBK decisions and pass them on. Null for personas no one
+  // has placed yet — those created by users after the backfill.
+  group PersonaGroup?
+
+  contexts         PersonaContext[]
+  projects         ProjectPersona[]
+  timelineMessages TimelineMessage[]
+  sectionScores    PersonaSectionScore[]
+  readings         PersonaReading[]
+}
+
+enum PersonaGroup {
+  population
+  business
+  experts
+}
+
+// A1 stage 2: the kind of document, for the report header and the default
+// audience in the Setup UI.
+enum DocType {
+  press_release
+  mpr
+  fsr
+  analytical_note
+  other
+}
+
+model PersonaContext {
+  id        Int    @id @default(autoincrement())
+  personaId Int
+  src       String
+  quote     String @db.Text
+
+  persona Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+}
+
+// ─── Project (Simulation) ────────────────────────────────────
+
+model Project {
+  id               Int     @id @default(autoincrement())
+  title            String
+  subtitle         String  @default("")
+  mode             String  @default("Round Table")
+  iterations       Int     @default(5) // iterMax — максимум итераций
+  currentIteration Int     @default(0) // iterCur — текущая итерация
+  moderator        Boolean @default(true)
+  goal             String  @default("risk_search")
+
+  // Key messages the author intends the document to convey. The report scores
+  // each one against what the personas actually took away (perceived message).
+  intendedMessages String[]
+  // setup | running | completed. "finished" never existed in code: nothing
+  // ever wrote it and no row holds it — the comment promised a fourth value
+  // and the validator listed one (SECURITY.md item 32).
+  status           String   @default("setup")
+  documentText     String?  @db.Text
+  documentFile     String?
+  documentFileName String? // original uploaded filename (documentFile holds the disk-safe generated name)
+  // Which model was configured when this project was created. No default: the
+  // old one was "GPT-4o", a model this product has never called, and it would
+  // have been applied to any row created without the field — a wrong answer
+  // stored silently. project.service.ts writes env.llmModel here, so an
+  // omission is now a compile error instead.
+  llmModel         String
+
+  // Opaque per-device workspace key (X-Session-Key header, generated and kept
+  // in the browser's localStorage). Scopes the project list so two people
+  // using the same deployment don't see each other's simulations. This is
+  // workspace isolation, NOT authentication — the header is trivially
+  // forgeable, so it must never be relied on to protect sensitive data.
+  // Nullable on purpose: rows created before this column existed carry null
+  // and stay visible to everyone (legacy/demo data).
+  ownerKey String? @db.VarChar(64)
+
+  // A1 stage 2: what the document is and whom it was written for. All three
+  // optional. The default audience per type is applied by the Setup UI only —
+  // the server stores what the client sent. Empty intendedAudience = not set.
+  docType          DocType?
+  publishedAt      DateTime?      @db.Date
+  intendedAudience PersonaGroup[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  personas             ProjectPersona[]
+  timeline             TimelineMessage[]
+  summary              DiscussionSummary?
+  analytics            AnalyticsReport?
+  llmUsage             LlmUsage[]
+  sections             DocumentSection[]
+  personaSectionScores PersonaSectionScore[]
+  personaReadings      PersonaReading[]
+  audienceAnalysis     AudienceAnalysis?
+  rewriteSet           RewriteSet?
+
+  @@index([ownerKey, createdAt])
+}
+
+// Sections of Project.documentText (A1, stage 0), computed when the text is
+// attached — services/documentSections.ts. The audit reads the document section
+// by section, so the sections must be a real structure rather than the model's
+// guess about the first page.
+//
+// Invariant, pinned by a test: documentText.slice(startOffset, endOffset) ===
+// text for every row, and the rows of a project cover the document in order
+// without gaps or overlaps. That is what makes a quote found in one section
+// checkable against the whole document. The text is duplicated rather than
+// sliced on read so that a section stays readable even if the invariant is
+// ever broken by a write that forgot to rebuild — the check can then say so.
+model DocumentSection {
+  id          Int     @id @default(autoincrement())
+  projectId   Int
+  order       Int
+  // The heading(s) the section begins with; null when it begins without one
+  // (the opening of a document, or a cut inside a long section).
+  heading     String? @db.Text
+  text        String  @db.Text
+  startOffset Int
+  endOffset   Int
+
+  project       Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // Cascade: a rebuilt section list means a changed document, and scores of
+  // the old text say nothing about the new one.
+  personaScores PersonaSectionScore[]
+
+  @@unique([projectId, order])
+}
+
+model ProjectPersona {
+  projectId Int
+  personaId Int
+
+  // Per-discussion override of Persona.stance — null means "use the persona's
+  // own stance". Lets the same library persona argue "за" in one discussion
+  // and "против" in another without mutating the shared Persona record.
+  stanceOverride String?
+
+  // Per-discussion overrides generated by the LLM from the actual uploaded
+  // document (see llm.service.ts generatePersonaDocumentPositions). Without
+  // these, a persona's reasoning/priority/fears/thinking stay whatever was
+  // seeded for the original demo document and get reused verbatim for every
+  // unrelated document a project is created with — null means "fall back to
+  // the persona's own library-wide default".
+  reasoningOverride String? @db.Text
+  priorityOverride  String? @db.Text
+  fearsOverride     String? @db.Text
+  thinkingOverride  String? @db.Text
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  persona Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, personaId])
+}
+
+// ─── Discussion ──────────────────────────────────────────────
+
+model TimelineMessage {
+  id          Int    @id @default(autoincrement())
+  projectId   Int
+  personaId   Int? // null для сообщений модератора
+  speakerType String @default("persona") // "persona" | "moderator"
+  n           Int
+  text        String @db.Text
+  iteration   Int    @default(1)
+  time        String
+
+  createdAt DateTime @default(now())
+
+  project Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  persona Persona? @relation(fields: [personaId], references: [id])
+
+  @@unique([projectId, n])
+}
+
+model DiscussionSummary {
+  id         Int      @id @default(autoincrement())
+  projectId  Int      @unique
+  mood       String
+  moodEmoji  String
+  conclusion String   @db.Text
+  topics     String[]
+  risks      String[]
+  improves   String[]
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ─── Analytics ───────────────────────────────────────────────
+
+model AnalyticsReport {
+  id              Int      @id @default(autoincrement())
+  projectId       Int      @unique
+  conclusions     Json // [{n, text}]
+  topicBars       Json // [{name, pct}]
+  risks           String[]
+  positives       Json // [{text, by}]
+  recommendations String[]
+  altParagraphs   Json // [{tag, text, color}]
+  // Document audit produced by a second LLM pass: overall/dimension scores,
+  // structured issues (severity + quote + consensus), per-section clarity and
+  // intended-vs-perceived alignment. One nullable Json column instead of five
+  // tables — the whole block is written and read as a unit by the report page.
+  extras          Json? // { overallScore, scores[], issues[], sections[], alignment[] }
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ─── LLM spend ───────────────────────────────────────────────
+
+// One row per completion. Before this existed the service had no idea what it
+// spent: no counter, no per-project total, no daily figure, nothing to alert on
+// — on a shared NBK token quota, reached by an endpoint with no authentication.
+//
+// Deliberately append-only and denormalised: the model name is stored per row
+// rather than joined, because the point of the table is to stay readable years
+// later when LLM_MODEL has changed.
+model LlmUsage {
+  id        Int    @id @default(autoincrement())
+  // Null for calls that belong to no project: suggest/personas has no entity
+  // behind it, and the per-document persona positions are computed before the
+  // project row exists.
+  projectId Int?
+  // Which LLM scenario spent this — LlmScenario in services/llmUsage.service.ts.
+  scenario  String
+  model     String
+
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+
+  // Research profile (A1 stage 1): which version of the scenario's prompt ran,
+  // and a hash of the prompt with the per-request fence tag masked, so two
+  // runs on the same input can be told apart from two prompt versions. Null
+  // for scenarios that do not record them.
+  scenarioVersion String?
+  promptHash      String? @db.VarChar(64)
+
+  createdAt DateTime @default(now())
+
+  // SetNull rather than Cascade: deleting a project must not erase the record
+  // of what it cost. The spend happened.
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // The daily-cap query is "sum totalTokens since midnight", optionally for one
+  // scenario — both of those read this index.
+  @@index([createdAt])
+  @@index([scenario, createdAt])
+  @@index([projectId])
+}
+
+// One persona's scores for one section of the document (A1 stage 1).
+// Criteria 1–5 come from the persona (null = not applicable or not usable,
+// with the reason in nullReasons); criterion 6 is computed by code from the
+// dictionary terms found in the section and the ones the persona marked.
+model PersonaSectionScore {
+  id        Int @id @default(autoincrement())
+  projectId Int
+  personaId Int
+  sectionId Int
+
+  clarity      Int?
+  reasons      Int?
+  myAction     Int?
+  rateSignal   Int?
+  trust        Int?
+  // { criterionKey: reason } for every criterion that is null.
+  nullReasons  Json     @default("{}")
+  // persona_score@3: { criterionKey: { level, why, adjusted } } — the described
+  // level the persona chose, its phrase, and whether code moved the score to
+  // the ±1 band. Empty for scores of earlier versions.
+  levels       Json     @default("{}")
+  terms        Int
+  termsFound   String[]
+  termsUnclear String[]
+
+  // The persona left this section out of its answer: every score is null.
+  skipped Boolean @default(false)
+
+  read          String   @db.Text
+  unclear       String[]
+  quote         String   @db.Text
+  // true = helped, false = hindered, null = not said.
+  quoteHelped   Boolean?
+  // Server verdict, never from a request: is the quote verbatim in the
+  // document (text without running headers and footers). Null = no quote.
+  quoteVerified Boolean?
+
+  createdAt DateTime @default(now())
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  persona Persona         @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  section DocumentSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, personaId, sectionId])
+  @@index([projectId])
+}
+
+// One persona's reading of the whole document (A1 stage 1). status "failed"
+// marks a persona whose call failed: it has no section scores and stays out
+// of every average.
+model PersonaReading {
+  id        Int @id @default(autoincrement())
+  projectId Int
+  personaId Int
+
+  status     String // scored | failed
+  failReason String @default("")
+
+  mainTakeaway      String   @default("") @db.Text
+  decision          String   @default("") @db.Text
+  myAction          String   @default("") @db.Text
+  // persona_score@3: criterion 4 is scored once per document, not per
+  // section; its level, phrase and band adjustment are in `levels`.
+  rateSignal        Int?
+  levels            Json     @default("{}")
+  // Words the persona called unclear that are not in the dictionary —
+  // candidates for config/jargonDictionary.ts.
+  extraUnclearWords String[]
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  persona Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, personaId])
+}
+
+// A1 stage 2: for whom the text is clear. Built from the persona scores of
+// stage 1 — never from the discussion, and it changes neither. One row per
+// project; a rerun replaces it whole. What the model produced is kept as it
+// was normalised (reference quote, verdicts, missing explanations); the group
+// levels, the gap and the terms are computed by code on every read.
+model AudienceAnalysis {
+  id        Int @id @default(autoincrement())
+  projectId Int @unique
+
+  // The moment of the persona scores this analysis was built on (the newest
+  // PersonaReading.createdAt). Scores rerun later make it stale; a stale
+  // analysis is shown as such, never deleted silently.
+  scoresAt DateTime
+
+  // { quote, section, verified, reason } — the decision as the document states
+  // it. verified is the server's check against the text without running lines.
+  reference Json
+  // [{ personaId, verdict, reason, by }] — by: model | code.
+  verdicts  Json
+  // { [group]: { status, items[], dropped } }.
+  missing   Json
+  // { reference, verdicts, missing } — prompt versions, as in LlmUsage.
+  versions  Json
+
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// A1 stage 3: three versions of the document — the card (population), the
+// brief (business and journalists), the full text with point edits (experts).
+// One row per project. Each layer is one JSON object with its text, the
+// code's checks, the placeholders for the author, the prompt version and the
+// moment of the audience analysis it was built on (`basedOn`) — a layer can be
+// regenerated alone, so staleness is per layer. A run of all three replaces
+// the row whole, in one transaction.
+model RewriteSet {
+  id        Int @id @default(autoincrement())
+  projectId Int @unique
+
+  card  Json?
+  brief Json?
+  full  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

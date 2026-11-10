@@ -1,0 +1,11 @@
+-- Project.llmModel loses its column default.
+--
+-- The default was 'GPT-4o' — a model this product has never called. It never
+-- fired in practice, because CreateProjectSchema supplied env.llmModel on
+-- every create (checked against the live database: 12 rows 'Qwen/Qwen3.5-35B-A3B-FP8',
+-- 2 rows 'assistant-balanced', 0 rows 'GPT-4o'), so this is a trap removed, not
+-- a wrong value corrected. No data is touched.
+--
+-- Now that the client cannot send the field and the server always writes it,
+-- a row arriving without it is a bug, and NOT NULL with no default says so.
+ALTER TABLE "Project" ALTER COLUMN "llmModel" DROP DEFAULT;

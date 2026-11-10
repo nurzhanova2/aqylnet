@@ -1,0 +1,14 @@
+-- Drops the Dialog table (SECURITY.md item 34).
+--
+-- Nothing is lost: the table held 0 rows in the live database, and nothing in
+-- the product ever wrote one. The four rows the seed used to create were demo
+-- content copied from a frontend mock, with fixed text and fixed pairs, and
+-- seeding has been off by default since stage E5.
+--
+-- Personas still talk to each other — that was never this table's job. A round
+-- passes every persona the full transcript with speaker names and instructs it
+-- to react; in "Дебаты" mode the speaking order alternates the two camps and
+-- each persona is told to answer the previous opponent by name. Measured on the
+-- live transcripts before this change: 46% of Round Table replies and 80% of
+-- Дебаты replies address another participant by name.
+DROP TABLE "Dialog";
