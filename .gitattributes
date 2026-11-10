@@ -1,0 +1,10 @@
+# Shell scripts run inside Linux containers — must stay LF regardless of the
+# checkout platform's core.autocrlf setting, or /bin/sh chokes on stray \r.
+*.sh text eol=lf
+
+# Certificates are appended to /etc/ssl/certs/ca-certificates.crt inside the
+# image; CRLF checked out on Windows would mix \r into that bundle.
+*.crt text eol=lf
+
+# Dockerfile is executed by the Linux daemon, not the checkout platform.
+Dockerfile text eol=lf

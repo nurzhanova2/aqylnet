@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Uploads
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Local working notes (analysis, context, handoff) — not part of the repository.
+.ai/
+
+# Corporate deployment repository (tracked separately in GitLab)
+aqylnet-feedback/
+
+# Prisma generated
+backend/node_modules/

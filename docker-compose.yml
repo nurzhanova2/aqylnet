@@ -1,0 +1,151 @@
+services:
+  # ─── PostgreSQL ───────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: aqylnet-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      # Kept out of this committed file — set it in the (gitignored) root .env.
+      # No default on purpose: a silent fallback to a known password is exactly
+      # what this replaces. Note POSTGRES_PASSWORD only applies to a *fresh*
+      # volume; an existing one needs ALTER USER as well.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: aqylnet
+    ports:
+      # Loopback only. The backend reaches Postgres over the compose network, so
+      # this publication exists purely for host-side tooling (prisma CLI, psql,
+      # tests/). Bound to all interfaces it put the database on the corporate
+      # network, reachable past the API and past ownerKey entirely.
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d aqylnet']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── Backend ──────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aqylnet-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/aqylnet?schema=public
+      PORT: 3001
+      # Production build, production dependencies, no tsx, not root.
+      NODE_ENV: production
+      # Seeding is off by default: it used to run on every start and create a
+      # demo project with ownerKey = null, which means visible in every
+      # workspace. Set to true once, on a fresh database, to populate the
+      # 34-persona library.
+      RUN_SEED: ${RUN_SEED:-false}
+      # Comma-separated. The thin frontend is same-origin behind nginx and
+      # needs no entry here; these cover the local dev server and anyone
+      # hitting the API directly from another machine.
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5174,http://localhost:8080}
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE_MB: 20
+      # One nginx hop in front. Without it every request appears to come from
+      # the proxy container and the per-IP limiters share a single bucket.
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      # Rate limits — defaults live in backend/src/config/env.ts; override only
+      # to widen them for a load test or to run the live tests/ suites, which
+      # legitimately exceed the per-session budget.
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
+      RATE_LIMIT_LLM_MAX: ${RATE_LIMIT_LLM_MAX:-40}
+      RATE_LIMIT_LLM_GLOBAL_MAX: ${RATE_LIMIT_LLM_GLOBAL_MAX:-150}
+      RATE_LIMIT_UPLOAD_MAX: ${RATE_LIMIT_UPLOAD_MAX:-30}
+      # Windows of the limiters above. Empty means the default in env.ts.
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-}
+      RATE_LIMIT_LLM_WINDOW_MS: ${RATE_LIMIT_LLM_WINDOW_MS:-}
+      RATE_LIMIT_UPLOAD_WINDOW_MS: ${RATE_LIMIT_UPLOAD_WINDOW_MS:-}
+      # Parser budgets — defaults (and the measurements behind them) are in
+      # backend/src/config/limits.ts. Declared here so they can be overridden
+      # at all: compose passes only what this list names.
+      DOCUMENT_PARSE_TIMEOUT_MS: ${DOCUMENT_PARSE_TIMEOUT_MS:-20000}
+      DOCUMENT_PARSE_MAX_HEAP_MB: ${DOCUMENT_PARSE_MAX_HEAP_MB:-512}
+      # LLM spend ceilings and per-completion timeout. The daily budget is the
+      # only thing standing between an unauthenticated endpoint and a shared
+      # NBK quota, so it is deliberately present rather than implicit.
+      LLM_DAILY_TOKEN_BUDGET: ${LLM_DAILY_TOKEN_BUDGET:-10000000}
+      LLM_DAILY_SUGGEST_CALLS: ${LLM_DAILY_SUGGEST_CALLS:-200}
+      LLM_REQUEST_TIMEOUT_MS: ${LLM_REQUEST_TIMEOUT_MS:-45000}
+      # How many rounds may hold a pooled connection at once (measured pool: 49).
+      MAX_CONCURRENT_ROUNDS: ${MAX_CONCURRENT_ROUNDS:-6}
+      # Set to false if the configured model's proxy route rejects the
+      # vLLM-specific chat_template_kwargs passthrough with a 400. See
+      # backend/src/config/env.ts.
+      LLM_DISABLE_THINKING: ${LLM_DISABLE_THINKING:-true}
+      # Per-scenario max_tokens, the model window and the persona-score
+      # timeout. Empty means the measured default in backend/src/config/limits.ts
+      # (env.ts treats a blank value as unset). They are listed so that a model
+      # change behind the alias can be absorbed by .env and `up -d backend`,
+      # without a rebuild — compose passes only what this list names.
+      LLM_MAX_TOKENS_SUGGEST: ${LLM_MAX_TOKENS_SUGGEST:-}
+      LLM_MAX_TOKENS_POSITIONS: ${LLM_MAX_TOKENS_POSITIONS:-}
+      LLM_MAX_TOKENS_PERSONA: ${LLM_MAX_TOKENS_PERSONA:-}
+      LLM_MAX_TOKENS_MODERATOR: ${LLM_MAX_TOKENS_MODERATOR:-}
+      LLM_MAX_TOKENS_REPORT: ${LLM_MAX_TOKENS_REPORT:-}
+      LLM_MAX_TOKENS_AUDIT: ${LLM_MAX_TOKENS_AUDIT:-}
+      LLM_MAX_TOKENS_ALIGNMENT: ${LLM_MAX_TOKENS_ALIGNMENT:-}
+      LLM_MAX_TOKENS_CHECKLIST: ${LLM_MAX_TOKENS_CHECKLIST:-}
+      LLM_MAX_TOKENS_CONTRADICTIONS: ${LLM_MAX_TOKENS_CONTRADICTIONS:-}
+      LLM_MAX_TOKENS_PERSONA_SCORE: ${LLM_MAX_TOKENS_PERSONA_SCORE:-}
+      LLM_MAX_TOKENS_DECISION_REFERENCE: ${LLM_MAX_TOKENS_DECISION_REFERENCE:-}
+      LLM_MAX_TOKENS_DECISION_VERDICTS: ${LLM_MAX_TOKENS_DECISION_VERDICTS:-}
+      LLM_MAX_TOKENS_MISSING: ${LLM_MAX_TOKENS_MISSING:-}
+      LLM_MAX_TOKENS_REWRITE_CARD: ${LLM_MAX_TOKENS_REWRITE_CARD:-}
+      LLM_MAX_TOKENS_REWRITE_BRIEF: ${LLM_MAX_TOKENS_REWRITE_BRIEF:-}
+      LLM_MAX_TOKENS_REWRITE_BLUF: ${LLM_MAX_TOKENS_REWRITE_BLUF:-}
+      LLM_MAX_TOKENS_REWRITE_SECTION: ${LLM_MAX_TOKENS_REWRITE_SECTION:-}
+      LLM_CONTEXT_TOKENS: ${LLM_CONTEXT_TOKENS:-}
+      LLM_PERSONA_SCORE_TIMEOUT_MS: ${LLM_PERSONA_SCORE_TIMEOUT_MS:-}
+      # true — look for possible contradictions between sections (off by
+      # decision of 03.11.2026; empty means off).
+      AUDIT_CONTRADICTIONS: ${AUDIT_CONTRADICTIONS:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_API_BASE: ${LLM_API_BASE:-https://prod-litellm.nationalbank.kz}
+      # Capability alias, not a model name — new tokens accept only aliases, and
+      # the old concrete names have an announced shutdown date.
+      LLM_MODEL: ${LLM_MODEL:-assistant-balanced}
+    ports:
+      - '3001:3001'
+    volumes:
+      # Only the uploads volume. The source and schema bind-mounts are gone on
+      # purpose: the image now carries a compiled dist/, and mounting sources
+      # over it was also how the tsx-watch trap worked — inotify does not cross
+      # a Docker Desktop bind mount on Windows, so the container held the new
+      # files while still executing the old code. That cost one false
+      # verification in stage E2.
+      #
+      # Consequence for the workflow: changing backend/src now requires
+      # `docker compose up -d --build backend`, not `restart`.
+      - uploads:/app/uploads
+
+  # ─── Thin frontend (nginx) ────────────────────────────────────
+  # Serves the production build of aqylnet/ and proxies /api to the backend,
+  # so other machines on the network only need this one port.
+  # The build itself is produced on the host (cd aqylnet && npm run build) and
+  # mounted read-only — rerun that after changing frontend code.
+  web:
+    image: nginx:1.27-alpine
+    container_name: aqylnet-web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '${WEB_PORT:-8080}:80'
+    volumes:
+      - ./aqylnet/dist:/usr/share/nginx/html:ro
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  postgres_data:
+  uploads:
