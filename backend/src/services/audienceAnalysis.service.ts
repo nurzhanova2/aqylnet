@@ -14,7 +14,8 @@ import {
 import { z } from 'zod';
 import { textForQuotes } from './auditQuoteRules';
 import {
-  applyVerdicts, checkReference, groupMaterial, planVerdicts, resolveMissing, verdictsWithoutReference,
+  applyVerdicts, checkReference, groupMaterial, hasComparableDecision, NO_COMPARABLE_DECISION, planVerdicts,
+  resolveMissing, verdictsWithoutReference,
 } from './audienceRules';
 import {
   AudienceGap, AudiencePersona, audienceGap, groupTerms, GroupTerms, GroupUnderstanding, groupUnderstanding,
@@ -76,13 +77,14 @@ export const audienceAnalysisService = {
 
       // 2.2 The verdicts.
       let verdicts: PersonaVerdict[];
-      if (reference.verified) {
+      if (hasComparableDecision(reference)) {
         const plan = planVerdicts(scores.personas);
         // The model only extracts; the verdict is the code's.
         const extracted = plan.answers.length > 0 ? await extractDecisions(plan.answers) : new Map();
         verdicts = applyVerdicts(scores.personas, plan, extracted, reference);
       } else {
-        verdicts = verdictsWithoutReference(scores.personas);
+        // No extraction call: there is nothing to check the answers against.
+        verdicts = verdictsWithoutReference(scores.personas, reference.verified ? NO_COMPARABLE_DECISION : undefined);
       }
 
       // 5.2 Missing explanations, one call per group with material.
@@ -130,7 +132,12 @@ export const audienceAnalysisService = {
     const verdictList = stored ? z.array(PersonaVerdictSchema).safeParse(stored.verdicts) : null;
     const missing = stored ? z.record(z.string(), GroupMissingSchema).safeParse(stored.missing) : null;
     const analysisOk = !!(stored && reference?.success && verdictList?.success && missing?.success);
-    const verdicts = new Map((analysisOk ? verdictList!.data! : []).map((v) => [v.personaId, v]));
+    // Analyses stored before the rule of 10.11.2026 may carry verdicts against
+    // a reference with nothing to compare; they are read as unchecked, so the
+    // group levels fall back to the index, as for any analysis without verdicts.
+    const comparable = analysisOk && hasComparableDecision(reference!.data!);
+    const verdicts = new Map((analysisOk ? verdictList!.data! : []).map((v) => [v.personaId,
+      comparable || !reference!.data!.verified ? v : { ...v, verdict: null, reason: NO_COMPARABLE_DECISION, extracted: null }]));
 
     const personas: AudiencePersona[] = scores.personas.map((p) => ({
       personaId: p.id,
@@ -163,6 +170,7 @@ export const audienceAnalysisService = {
         // Scores rerun after the analysis: shown as stale, never deleted.
         stale: !scores.scoredAt || stored!.scoresAt.toISOString() !== scores.scoredAt,
         reference: reference!.data!,
+        comparable,
         verdicts: scores.personas.map((p) => ({
           personaId: p.id,
           name: p.name,
@@ -197,6 +205,8 @@ export interface AudienceAnalysisDTO {
     basedOn: string;
     stale: boolean;
     reference: DecisionReference;
+    /** The reference says which way or how much, so answers were checked against it. */
+    comparable: boolean;
     verdicts: {
       personaId: number;
       name: string;

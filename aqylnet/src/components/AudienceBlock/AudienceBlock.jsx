@@ -3,7 +3,8 @@ import styles from './AudienceBlock.module.css';
 import DocumentMetaFields from '../DocumentMetaFields/DocumentMetaFields';
 import { Banner, Cells, Chevron, Eyebrow, Pill, toneOf100 } from '../ReportAtoms/ReportAtoms';
 import {
-  AUDIENCE_HINT, REFERENCE_MISSING, STALE_NOTE, buildAudienceModel, droppedLine, personasLabel, verdictLabel,
+  AUDIENCE_HINT, NO_DECISION_NOTE, REFERENCE_MISSING, STALE_NOTE, buildAudienceModel, droppedLine, personasLabel,
+  showReason, verdictLabel,
 } from '../../utils/audienceModel';
 import { QUOTE_UNVERIFIED } from '../../utils/reportTrust';
 
@@ -20,13 +21,18 @@ function headlineTone(dto) {
   return dto.gap.verdict === 'on_target' ? 'good' : 'mid';
 }
 
+// The three criteria are scores on 1–10, the rows below them are counts. A bare
+// «Термины 10» next to «Вопросов без ответа 0» read as «ten terms» when it means
+// that every term was clear — so the scores say their scale.
+const outOfTen = (v) => (v === '—' ? v : `${v} / 10`);
+
 function GroupCard({ g }) {
   const warnBorder = g.target && g.level !== 'clear';
   const rows = [
     ['Верно поняли решение', g.share, false],
-    ['Понятность', g.criteria.clarity, false],
-    ['Что делать мне', g.criteria.myAction, g.criteria.myAction !== '—' && parseFloat(String(g.criteria.myAction).replace(',', '.')) < 5],
-    ['Термины', g.criteria.terms, false],
+    ['Понятность', outOfTen(g.criteria.clarity), false],
+    ['Что делать мне', outOfTen(g.criteria.myAction), g.criteria.myAction !== '—' && parseFloat(String(g.criteria.myAction).replace(',', '.')) < 5],
+    ['Понятность терминов', outOfTen(g.criteria.terms), false],
     ['Вопросов без ответа', String(g.unanswered), false],
     ['Участников', g.few ? `${g.personas} · мало` : String(g.personas), !!g.few],
   ];
@@ -150,7 +156,12 @@ export default function AudienceBlock({ audience, number, frame, anchor, running
               <div className={styles.stack}>
                 <Eyebrow>Как поняли решение</Eyebrow>
                 <div className={styles.panel}>
-                  {a.referenceOk ? (
+                  {a.referenceOk && !a.comparable ? (
+                    <div className={styles.referenceMissing}>
+                      {NO_DECISION_NOTE}
+                      <span className={styles.refNone}> Ближайшая к решению фраза документа: «{a.reference.quote}»</span>
+                    </div>
+                  ) : a.referenceOk ? (
                     <div className={styles.reference}>
                       <div className={styles.referenceMain}>
                         <span className={styles.refLabel}>
@@ -170,7 +181,8 @@ export default function AudienceBlock({ audience, number, frame, anchor, running
                       {a.reference.quote && <span className={styles.quoteWarn}> Модель предложила: «{a.reference.quote}» — {QUOTE_UNVERIFIED}.</span>}
                     </div>
                   )}
-                  {a.verdicts.map((v) => (
+                  {/* Without a comparable decision each row would only repeat «не проверялось». */}
+                  {a.comparable && a.verdicts.map((v) => (
                     <div key={v.personaId} className={styles.verdict}>
                       <span className={styles.who}>
                         <span className={styles.whoName}>{v.name}</span>
@@ -179,7 +191,7 @@ export default function AudienceBlock({ audience, number, frame, anchor, running
                       <span className={styles.answer}>
                         <span className={styles.answerText}>{v.decision ? `«${v.decision}»` : '—'}</span>
                         {v.extractedLine && <span className={styles.extracted}>В ответе: {v.extractedLine}</span>}
-                        {v.verdict !== 'correct' && v.reason && <span className={styles.reason}>{v.reason}</span>}
+                        {showReason(v) && <span className={styles.reason}>{v.reason}</span>}
                       </span>
                       <Pill tone={v.verdict ? VERDICT_TONE[v.verdict] : 'none'}>{verdictLabel(v.verdict)}</Pill>
                     </div>

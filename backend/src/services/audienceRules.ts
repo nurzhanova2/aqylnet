@@ -147,9 +147,27 @@ export function planVerdicts(personas: Persona[]): VerdictPlan {
   return { answers, personaOf, fixed };
 }
 
-/** Every persona with no reference: null, «эталон не найден». */
-export function verdictsWithoutReference(personas: Persona[]): PersonaVerdict[] {
-  return personas.map((p) => ({ personaId: p.id, verdict: null, reason: 'эталон не найден', by: 'code' as const, extracted: null }));
+export const NO_COMPARABLE_DECISION = 'в документе нет решения с направлением или величиной — сверять ответы не с чем';
+
+/**
+ * Whether the reference is a decision an answer can be checked against
+ * (decision of 10.11.2026): a verified sentence that says which way —
+ * raise, lower, hold — or how much. An actor alone, or a direction «other»
+ * without a value, is not one: on a news item or a strategy the model still
+ * picks some sentence, every persona honestly answers «не понял», and a 0 %
+ * share of «understood the decision» then drove every group to «непонятно»
+ * over a decision the document does not contain. A measure with a number
+ * (a debt-load cap of 40 %) stays comparable by its value.
+ */
+export function hasComparableDecision(ref: Pick<DecisionReference, 'verified' | 'direction' | 'value'>): boolean {
+  if (ref.verified !== true) return false;
+  const dir = ref.direction.value;
+  return (dir !== null && dir !== 'other') || ref.value.value !== null;
+}
+
+/** Every persona with no reference to check against: null, with the reason. */
+export function verdictsWithoutReference(personas: Persona[], reason = 'эталон не найден'): PersonaVerdict[] {
+  return personas.map((p) => ({ personaId: p.id, verdict: null, reason, by: 'code' as const, extracted: null }));
 }
 
 /**

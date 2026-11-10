@@ -1,7 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  applyVerdicts, checkReference, decideVerdict, groupMaterial, planVerdicts, resolveMissing, verdictsWithoutReference,
+  applyVerdicts, checkReference, decideVerdict, groupMaterial, hasComparableDecision, NO_COMPARABLE_DECISION,
+  planVerdicts, resolveMissing, verdictsWithoutReference,
 } from './audienceRules';
 import type { ExtractedDecision } from './llm.service';
 import type { PersonaVerdict } from '../validators/audienceAnalysis.validator';
@@ -97,6 +98,36 @@ describe('verdicts per persona', () => {
 
   test('no reference: everyone null, «эталон не найден»', () => {
     assert.deepEqual(verdictsWithoutReference(ps).map((v) => [v.verdict, v.reason]), ps.map(() => [null, 'эталон не найден']));
+  });
+
+  test('a reference with nothing to compare: everyone null, with that reason', () => {
+    assert.deepEqual(verdictsWithoutReference(ps, NO_COMPARABLE_DECISION).map((v) => v.reason), ps.map(() => NO_COMPARABLE_DECISION));
+  });
+});
+
+describe('a reference is a decision only with a direction or a value (10.11.2026)', () => {
+  const field = (value: unknown) => ({ value, proposed: value, quote: '', verified: value === null ? null : true, reason: '' });
+  const r = (direction: unknown, value: unknown, verified: boolean | null = true) =>
+    ({ verified, direction: field(direction), value: field(value) }) as Parameters<typeof hasComparableDecision>[0];
+
+  test('the rate decision: a direction and a value', () => {
+    assert.equal(hasComparableDecision(ref), true);
+  });
+
+  test('a direction alone, or a value alone (a debt-load cap of 40 %), is enough', () => {
+    assert.equal(hasComparableDecision(r('hold', null)), true);
+    assert.equal(hasComparableDecision(r('other', 40)), true);
+  });
+
+  test('«иное решение» without a value, or an actor alone, is not a decision to check answers against', () => {
+    // Project 1119: a news item; the model picked «глава Нацбанка … не будет
+    // публиковать свою налоговую декларацию» — actor «other», direction «other».
+    assert.equal(hasComparableDecision(r('other', null)), false);
+    assert.equal(hasComparableDecision(r(null, null)), false);
+  });
+
+  test('an unverified reference is never comparable', () => {
+    assert.equal(hasComparableDecision(r('lower', 16.25, false)), false);
   });
 });
 

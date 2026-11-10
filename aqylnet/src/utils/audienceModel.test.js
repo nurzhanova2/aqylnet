@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AUDIENCE_HINT, NOT_CHECKED, STALE_NOTE, audienceExportLines, buildAudienceModel, levelTone } from './audienceModel';
+import { AUDIENCE_HINT, NOT_CHECKED, NO_DECISION_NOTE, STALE_NOTE, audienceExportLines, buildAudienceModel, levelTone, showReason } from './audienceModel';
 import { audienceForType, documentMetaLine, fmtDate, metaPayload } from './documentMeta';
 import { buildReportModel } from './exportReport';
 
@@ -64,6 +64,24 @@ describe('audience model', () => {
     expect(e.missing[0].lines[1]).toMatch(/Вопрос участника: «что с вкладами\?»/);
     expect(e.missing[0].lines[2]).toBe('Непонятные термины: ДКП (1)');
     expect(e.missing[1].lines).toEqual(['недостаточно данных']);
+  });
+
+  it('a reference with nothing to compare: one note, no verdict rows', () => {
+    const e = audienceExportLines({ ...dto, analysis: { ...dto.analysis, comparable: false } });
+    expect(e.reference).toBe(NO_DECISION_NOTE);
+    expect(e.verdicts).toEqual([]);
+    expect(buildAudienceModel({ ...dto, analysis: { ...dto.analysis, comparable: false } }).analysis.comparable).toBe(false);
+  });
+
+  it('the reason «ответил «не понял»» is not repeated under the answer «не понял»', () => {
+    expect(showReason({ verdict: 'not_understood', reason: 'ответил «не понял»' })).toBe(false);
+    expect(showReason({ verdict: 'wrong', reason: 'величина 15 вместо 16,25' })).toBe(true);
+    expect(showReason({ verdict: 'correct', reason: '' })).toBe(false);
+  });
+
+  it('criteria are written as scores out of 10, so a terms score of 10 does not read as ten terms', () => {
+    const e = audienceExportLines(dto);
+    expect(e.groups[0]).toMatch(/понятность 7\/10, что делать мне 7\/10, понятность терминов 5,1\/10; вопросов без ответа 45/);
   });
 
   it('an unverified reference is said, and the answers are not compared', () => {

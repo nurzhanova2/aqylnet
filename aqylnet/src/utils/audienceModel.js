@@ -12,6 +12,7 @@ export const NOT_CHECKED = 'не проверялось';
 export const AUDIENCE_HINT = 'Укажите, для кого писался документ, чтобы увидеть разрыв.';
 export const STALE_NOTE = 'Анализ устарел: оценки участников обновлены после него. Запустите анализ заново.';
 export const REFERENCE_MISSING = 'Эталон решения не найден';
+export const NO_DECISION_NOTE = 'В документе нет решения, которое можно сверить: не названо ни направление (повысить, снизить, сохранить), ни величина. Ответы участников не сверялись, и доля верно понявших решение не считается — уровень понимания групп посчитан по индексу.';
 
 // Decision fields (decision_reference@2, decision_verdict@4): the backend's
 // keys, product labels.
@@ -84,6 +85,14 @@ export function verdictLabel(v) {
   return v ? VERDICT_LABELS[v] : NOT_CHECKED;
 }
 
+/**
+ * Whether a verdict's reason adds anything. «ответил «не понял»» under the
+ * answer «не понял» and the badge «не понял» said the same thing three times.
+ */
+export function showReason(v) {
+  return v.verdict !== 'correct' && !!v.reason && v.reason !== 'ответил «не понял»';
+}
+
 export function buildAudienceModel(dto) {
   if (!dto) return null;
   const intended = dto.document?.intendedAudience ?? [];
@@ -115,6 +124,9 @@ export function buildAudienceModel(dto) {
       stale: a.stale,
       reference: a.reference,
       referenceOk: a.reference.verified === true,
+      // A found sentence is not yet a decision: without a direction or a value
+      // there is nothing to check the answers against (backend, 10.11.2026).
+      comparable: a.reference.verified === true && a.comparable !== false,
       referenceFields: referenceFields(a.reference),
       verdicts: a.verdicts.map((v) => ({
         ...v, groupLabel: GROUP_LABELS[v.group] ?? '', verdictLabel: verdictLabel(v.verdict), extractedLine: extractedLine(v.extracted),
@@ -143,14 +155,19 @@ export function audienceExportLines(dto) {
   const m = buildAudienceModel(dto);
   if (!m) return null;
   const a = m.analysis;
+  // Criteria are scores on 1–10, the rest are counts: the scores say their scale.
+  const ofTen = (v) => (v === '—' ? v : `${v}/10`);
   const groups = m.groups.map((g) =>
-    `${g.label}${g.target ? ' (целевая)' : ''}: ${g.levelLabel} — индекс ${g.index}${g.indexBasis ? ` (${g.indexBasis})` : ''}, верно поняли решение ${g.share}; понятность ${g.criteria.clarity}, что делать мне ${g.criteria.myAction}, термины ${g.criteria.terms}; вопросов без ответа ${g.unanswered}; участников ${g.personas}${g.few ? ` (${g.few})` : ''}`);
-  const reference = !a ? '' : a.referenceOk
-    ? `Решение по документу${a.reference.section ? ` (${a.reference.section})` : ''}: «${a.reference.quote}»`
-      + (a.referenceFields.length ? `. Сверяется: ${a.referenceFields.map((f) => `${f.label.toLowerCase()} — ${f.value ?? f.note}`).join('; ')}` : '')
-    : `${REFERENCE_MISSING}${a.reference.reason ? ` — ${a.reference.reason}` : ''}. Ответы участников не сверялись.`;
-  const verdicts = !a ? [] : a.verdicts.map((v) =>
-    `${v.name} (${v.groupLabel}): ${v.verdictLabel} — «${v.decision || '—'}»${v.extractedLine ? ` [${v.extractedLine}]` : ''}${v.verdict !== 'correct' && v.reason ? `. ${v.reason}` : ''}`);
+    `${g.label}${g.target ? ' (целевая)' : ''}: ${g.levelLabel} — индекс ${g.index}${g.indexBasis ? ` (${g.indexBasis})` : ''}, верно поняли решение ${g.share}; понятность ${ofTen(g.criteria.clarity)}, что делать мне ${ofTen(g.criteria.myAction)}, понятность терминов ${ofTen(g.criteria.terms)}; вопросов без ответа ${g.unanswered}; участников ${g.personas}${g.few ? ` (${g.few})` : ''}`);
+  const reference = !a ? '' : !a.referenceOk
+    ? `${REFERENCE_MISSING}${a.reference.reason ? ` — ${a.reference.reason}` : ''}. Ответы участников не сверялись.`
+    : !a.comparable
+      ? NO_DECISION_NOTE
+      : `Решение по документу${a.reference.section ? ` (${a.reference.section})` : ''}: «${a.reference.quote}»`
+        + (a.referenceFields.length ? `. Сверяется: ${a.referenceFields.map((f) => `${f.label.toLowerCase()} — ${f.value ?? f.note}`).join('; ')}` : '');
+  // Without a comparable decision every row would only repeat «не проверялось».
+  const verdicts = !a || !a.comparable ? [] : a.verdicts.map((v) =>
+    `${v.name} (${v.groupLabel}): ${v.verdictLabel} — «${v.decision || '—'}»${v.extractedLine ? ` [${v.extractedLine}]` : ''}${showReason(v) ? `. ${v.reason}` : ''}`);
   const missing = !a ? [] : a.missing.map((g) => ({
     label: g.label,
     lines: [
