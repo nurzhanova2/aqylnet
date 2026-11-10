@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPersonaScoresModel, fmtScore, scoreTone, NOT_SCORED } from './personaScoresModel';
+import { buildPersonaScoresModel, fmtScore, scoreTone, NOT_SCORED, NO_DECISION_SHARE } from './personaScoresModel';
 import { QUOTE_UNVERIFIED } from './reportTrust';
 
 // A1 stage 1. The export carries the persona scores as computed by the server;
@@ -57,6 +57,9 @@ describe('buildPersonaScoresModel', () => {
     const m = buildPersonaScoresModel(SCORES);
     expect(m.groups[0]).toBe('Население: 1. Понятность: 6; 6. Термины: —');
     expect(m.shares).toBe('Не поняли, какое решение принято: 1 из 1 (100 %); не поняли, что делать: 0 из 1 (0 %).');
+    // A document without a decision to check: the share says so, not «не поняли».
+    expect(buildPersonaScoresModel(SCORES, { noDecision: true }).shares)
+      .toBe(`Решение: ${NO_DECISION_SHARE} 1 из 1; не поняли, что делать: 0 из 1 (0 %).`);
   });
 });
 

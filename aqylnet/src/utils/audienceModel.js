@@ -4,6 +4,7 @@
 
 import { GROUP_LABELS, PERSONA_GROUPS } from './personaGroups';
 import { fmtScore } from './personaScoresModel';
+import { countOf } from './plural';
 
 export const LEVEL_LABELS = { clear: 'понятно', partial: 'частично', unclear: 'непонятно' };
 export const VERDICT_LABELS = { correct: 'верно', partial: 'частично', wrong: 'неверно', not_understood: 'не понял' };
@@ -57,8 +58,17 @@ export function indexBasis(n) {
  * Personas behind a missing explanation. One is marked as such: in a group of
  * one or two an item may rest on a single persona (decision of 04.11.2026).
  */
+/**
+ * The reference's section as the model wrote it. For a section without a
+ * heading the outline reads «1. Раздел 1», and the model copies the number:
+ * «1. Раздел 1» is shown as «Раздел 1».
+ */
+export function sectionName(raw) {
+  return String(raw || '').trim().replace(/^(\d+)\.\s*(Раздел\s+\1)$/u, '$2');
+}
+
 export function personasLabel(n) {
-  return n === 1 ? '1 участник' : `участников: ${n}`;
+  return countOf(n, 'участник', 'участника', 'участников');
 }
 
 /** Why items were dropped by code, for the page and the export. */
@@ -118,11 +128,15 @@ export function buildAudienceModel(dto) {
     // about the groups and the hint.
     headline: dto.gap ? dto.gap.phrases : [dto.phrase, AUDIENCE_HINT].filter(Boolean),
     phrase: dto.phrase,
+    // The groups phrase under the gap — unless the gap's first line already
+    // named the best group («Писали для X, лучше всего поняли: Y»): then it
+    // only repeated «Лучше всего текст поняли: Y» a line below.
+    extraPhrase: intended.length > 0 && dto.phrase && !dto.gap?.shift ? dto.phrase : null,
     hasAudience: intended.length > 0,
     groups,
     analysis: a ? {
       stale: a.stale,
-      reference: a.reference,
+      reference: { ...a.reference, section: sectionName(a.reference.section) },
       referenceOk: a.reference.verified === true,
       // A found sentence is not yet a decision: without a direction or a value
       // there is nothing to check the answers against (backend, 10.11.2026).
@@ -184,7 +198,7 @@ export function audienceExportLines(dto) {
   }));
   return {
     title: 'Кому понятен текст',
-    headline: [...m.headline, ...(m.hasAudience && m.phrase ? [m.phrase] : [])],
+    headline: [...m.headline, ...(m.extraPhrase ? [m.extraPhrase] : [])],
     stale: a?.stale ? STALE_NOTE : '',
     notRun: a ? '' : 'Проверка понимания решения не запускалась: доля верно понявших не посчитана, уровень — только по индексу.',
     groups,

@@ -10,6 +10,8 @@ import { buildPersonaScoresModel } from './personaScoresModel';
 import { audienceExportLines } from './audienceModel';
 import { rewriteExportModel } from './rewriteModel';
 import { documentMetaLine } from './documentMeta';
+import { categoryLabel, issuePeople, severityLabel } from './issueLabels';
+import { countOf } from './plural';
 
 // Exported for exportReport.test.js. Both exporters go through it, so a test
 // on this one function covers the PDF and the DOCX at once — and what it
@@ -28,7 +30,8 @@ export function buildReportModel(analytics, document = null) {
 
   return {
     title: projectTitle || 'Отчёт по дискуссии',
-    meta: [documentMetaLine(document), projectSubtitle, `${personaCount} участников`, `${iterations} итераций`, `режим ${mode}`]
+    meta: [documentMetaLine(document), projectSubtitle, countOf(personaCount, 'участник', 'участника', 'участников'),
+      countOf(iterations, 'раунд', 'раунда', 'раундов'), `режим ${mode}`]
       .filter(Boolean)
       .join(' · '),
     moodLine: mood || '',
@@ -57,8 +60,8 @@ export function buildReportModel(analytics, document = null) {
     // must see what was not looked at (reportTrust.sectionLine).
     sections: (sections || []).map(sectionLine),
     issues: (issues || []).map((i) => {
-      const cat = i.kind === 'contradiction' ? CONTRADICTION_LABEL : i.category;
-      const parts = [`${i.code} [${i.severity} · ${cat}] ${issueHeading(i)}`];
+      const cat = i.kind === 'contradiction' ? CONTRADICTION_LABEL : categoryLabel(i.category);
+      const parts = [`${i.code} [${severityLabel(i.severity)} · ${cat}] ${issueHeading(i)}`];
       if (i.kind === 'absence') parts.push(ABSENCE_NOTE);
       const quote = (q, verified, where) => {
         const at = where ? `${where}: ` : '';
@@ -66,9 +69,10 @@ export function buildReportModel(analytics, document = null) {
       };
       if (i.quote) parts.push(quote(i.quote, i.quoteVerified, i.kind === 'contradiction' ? i.section : ''));
       if (i.kind === 'contradiction' && i.quote2) parts.push(quote(i.quote2, i.quote2Verified, i.section2));
-      if (i.raisedBy)   parts.push(`Поднял: ${i.raisedBy}`);
-      if (i.agreedBy)   parts.push(`Согласны: ${i.agreedBy}`);
-      if (i.disputedBy) parts.push(`Спорят: ${i.disputedBy}`);
+      const { raised, agreed, disputed } = issuePeople(i);
+      if (raised.length)   parts.push(`Подняли: ${raised.join(', ')}`);
+      if (agreed.length)   parts.push(`Согласны: ${agreed.join(', ')}`);
+      if (disputed.length) parts.push(`Спорят: ${disputed.join(', ')}`);
       return parts.join(' | ');
     }),
     alignment: (alignment || []).map((a) =>
@@ -115,7 +119,7 @@ export async function exportReportToPdf(analytics, personaScores = null, audienc
   const au = audienceExportLines(audience);
   // Persona scores (A1 stage 1) travel with the file: whoever reads the PDF
   // never saw the page.
-  const ps = buildPersonaScoresModel(personaScores);
+  const ps = buildPersonaScoresModel(personaScores, { noDecision: audience?.analysis?.comparable === false });
   const section = (heading) => ({ text: heading, style: 'sectionHeading', margin: [0, 14, 0, 6] });
   const sub = (heading) => ({ text: heading, style: 'body', bold: true, margin: [0, 8, 0, 4] });
   // Copy again at the single chokepoint, so a future field that forgets to map()
@@ -216,7 +220,7 @@ export async function exportReportToDocx(analytics, personaScores = null, audien
 
   const m = buildReportModel(analytics, audience?.document);
   const au = audienceExportLines(audience);
-  const ps = buildPersonaScoresModel(personaScores);
+  const ps = buildPersonaScoresModel(personaScores, { noDecision: audience?.analysis?.comparable === false });
   const heading = (text) =>
     new Paragraph({ text, heading: HeadingLevel.HEADING_2, spacing: { before: 240, after: 120 } });
   const bullets = (items) => items.map((text) => new Paragraph({ text: `• ${text}`, spacing: { after: 60 } }));

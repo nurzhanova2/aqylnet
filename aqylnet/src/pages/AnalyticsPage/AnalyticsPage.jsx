@@ -9,6 +9,7 @@ import { documentMetaLine, metaPayload } from '../../utils/documentMeta';
 import { Bar, toneOf100 } from '../../components/ReportAtoms/ReportAtoms';
 import { GROUP_LABELS } from '../../utils/personaGroups';
 import { fmtScore } from '../../utils/personaScoresModel';
+import { SEVERITY_LABELS, categoryLabel, issuePeople } from '../../utils/issueLabels';
 import { exportReportToPdf, exportReportToDocx, exportRewriteToPdf, exportRewriteToDocx } from '../../utils/exportReport';
 import {
   ALT_DISCLAIMER, ALT_UNVERIFIED, QUOTE_UNVERIFIED,
@@ -65,23 +66,23 @@ function tone(value) {
 // нейтральные, а не «слабо-красные».
 const SEVERITY_META = {
   Critical: {
-    label: 'Critical', fg: 'var(--danger-title)', bg: 'var(--danger-bg)',
+    label: SEVERITY_LABELS.Critical, fg: 'var(--danger-title)', bg: 'var(--danger-bg)',
     border: 'var(--danger-border)', card: 'var(--danger-border)', dot: DOT_SQUARE,
     dotColor: 'var(--danger)',
   },
   High: {
-    label: 'High', fg: 'var(--warn-title)', bg: 'var(--warn-bg)',
+    label: SEVERITY_LABELS.High, fg: 'var(--warn-title)', bg: 'var(--warn-bg)',
     border: 'var(--warn-border)', card: 'var(--line-card)', dot: DOT_SQUARE,
     dotColor: 'var(--warn)',
   },
   Medium: {
-    label: 'Medium', fg: 'var(--neutral-title)', bg: 'var(--neutral-bg)',
+    label: SEVERITY_LABELS.Medium, fg: 'var(--neutral-title)', bg: 'var(--neutral-bg)',
     border: 'var(--neutral-border)', card: 'var(--line-card)',
     dot: { ...DOT_ROUND, background: 'transparent', border: '1.5px dashed var(--neutral)' },
     dotColor: 'transparent',
   },
   Low: {
-    label: 'Low', fg: 'var(--neutral-text)', bg: 'var(--neutral-bg)',
+    label: SEVERITY_LABELS.Low, fg: 'var(--neutral-text)', bg: 'var(--neutral-bg)',
     border: 'var(--neutral-border)', card: 'var(--line-card)', dot: DOT_DASH,
     dotColor: 'var(--neutral)',
   },
@@ -91,18 +92,6 @@ const SEVERITY_ORDER = ['Critical', 'High', 'Medium', 'Low'];
 
 // The header's mini bars are narrow: the experts' full label wraps there.
 const GROUP_SHORT = { population: 'Население', business: 'Бизнес', experts: 'Эксперты' };
-
-const CATEGORY_LABELS = {
-  readability: 'читаемость',
-  terminology: 'терминология',
-  ambiguity:   'неоднозначность',
-  context:     'контекст',
-  logic:       'логика',
-  evidence:    'доказательность',
-  data:        'данные',
-  structure:   'структура',
-  audience:    'аудитория',
-};
 
 // "Напряжённый, скептический, эмоциональный" -> three chips. The model returns
 // the discussion's tone as a comma-separated phrase, and as a single line it
@@ -119,13 +108,6 @@ function moodChips(raw) {
 function shortSection(section) {
   const first = String(section || '').split(' / ')[0].trim();
   return first.length > 40 ? `${first.slice(0, 38)}…` : first;
-}
-
-function splitNames(raw) {
-  return String(raw || '')
-    .split(',')
-    .map((n) => n.trim())
-    .filter(Boolean);
 }
 
 /** Метка состояния заданной формы. */
@@ -782,9 +764,7 @@ export default function AnalyticsPage({ projectId, projectStatus, onGoDiscussion
               <div className={styles.issues}>
                 {visibleIssues.map((iss) => {
                   const sev = SEVERITY_META[iss.severity] ?? SEVERITY_META.Medium;
-                  const raised = splitNames(iss.raisedBy);
-                  const agreed = splitNames(iss.agreedBy);
-                  const disputed = splitNames(iss.disputedBy);
+                  const { raised, agreed, disputed } = issuePeople(iss);
                   return (
                     <article key={iss.code} className={styles.issue} style={{ borderColor: sev.card }}>
                       <div className={styles.issueTop}>
@@ -792,7 +772,7 @@ export default function AnalyticsPage({ projectId, projectStatus, onGoDiscussion
                         <StatusPill t={sev}>{sev.label}</StatusPill>
                         <span className={styles.spacer} />
                         <span className={styles.issueCat}>
-                          {iss.kind === 'contradiction' ? CONTRADICTION_LABEL : (CATEGORY_LABELS[iss.category] ?? iss.category)}
+                          {iss.kind === 'contradiction' ? CONTRADICTION_LABEL : categoryLabel(iss.category)}
                           {iss.kind === 'absence' ? ' · весь документ' : iss.section ? ` · ${shortSection(iss.section)}` : ''}
                         </span>
                       </div>
@@ -838,24 +818,21 @@ export default function AnalyticsPage({ projectId, projectStatus, onGoDiscussion
                             </span>
                           </div>
                         )}
-                        <div className={styles.issueFootRow}>
-                          {disputed.length > 0 ? (
-                            <>
-                              <span className={styles.issueFootLabel}>Спорят</span>
-                              <span className={styles.issueDispute}>{disputed.join(', ')}</span>
-                            </>
-                          ) : agreed.length > 0 ? (
-                            <>
-                              <span className={styles.issueFootLabel}>Согласны</span>
-                              <span className={styles.issueAgree}>{agreed.join(', ')}</span>
-                            </>
-                          ) : (
-                            <>
-                              <span className={styles.issueFootLabel}>Консенсус</span>
-                              <span className={styles.issueMuted}>не достигнут</span>
-                            </>
-                          )}
-                        </div>
+                        {/* Empty lists say nothing about consensus: an absence
+                            found by the checklist was never discussed at all, so
+                            «Консенсус не достигнут» there was a claim with no basis. */}
+                        {agreed.length > 0 && (
+                          <div className={styles.issueFootRow}>
+                            <span className={styles.issueFootLabel}>Согласны</span>
+                            <span className={styles.issueAgree}>{agreed.join(', ')}</span>
+                          </div>
+                        )}
+                        {disputed.length > 0 && (
+                          <div className={styles.issueFootRow}>
+                            <span className={styles.issueFootLabel}>Спорят</span>
+                            <span className={styles.issueDispute}>{disputed.join(', ')}</span>
+                          </div>
+                        )}
                       </div>
                     </article>
                   );
@@ -914,6 +891,7 @@ export default function AnalyticsPage({ projectId, projectStatus, onGoDiscussion
           error={scoreError}
           onRun={handleRunScores}
           hasDocument={(personaScores?.sections?.length ?? 0) > 0}
+          noDecision={audience?.analysis?.comparable === false}
         />
 
         {/* ── Кому понятен текст (A1, этап 2) ── */}

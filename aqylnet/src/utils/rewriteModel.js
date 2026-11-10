@@ -4,6 +4,8 @@
 // text. The marks travel everywhere the text goes: a draft that speaks for the
 // National Bank is read by people who never saw the page.
 
+import { severityLabel } from './issueLabels';
+
 /** Over the three versions, in the export header too (decision of 04.11.2026). */
 export const LIMITATION = 'Черновик. Проверено: числа и опорные цитаты есть в документе. Не проверено: верно ли передана связь между фактами — сверьте фразы с пометкой «проверить автору».';
 export const DRAFT_NOTE = 'Черновик. Заглушки [Дописать: …] заполняет автор.';
@@ -69,7 +71,7 @@ function summaryLine(summary, bounds) {
     `${summary.chars} символов${vol}`,
     summary.minutes != null ? `~${String(summary.minutes).replace('.', ',')} мин чтения` : '',
     `заглушек: ${summary.placeholders.length}`,
-    summary.marks != null ? `пометок: ${summary.marks}` : '',
+    summary.marks != null ? `фраз с пометками: ${summary.marks}` : '',
     `«проверить автору»: ${summary.authorChecks ?? 0}`,
     summary.unsupported ? `не подтверждено: ${summary.unsupported}` : '',
     summary.numbersNotFound ? `чисел не из документа: ${summary.numbersNotFound}` : '',
@@ -189,9 +191,9 @@ export function rewriteExportModel(dto, layerKey, docLine = '') {
       }),
     });
     if (model.issues.length) {
-      blocks.push({ heading: 'Замечания аудита High и Critical', lines: [
+      blocks.push({ heading: 'Замечания аудита: высокие и критичные', lines: [
         'Статус говорит, где правка, а не что замечание исправлено.',
-        ...model.issues.map((i) => `${i.id} (${i.severity}) ${i.title} — ${i.statusLabel}`),
+        ...model.issues.map((i) => `${i.id} (${severityLabel(i.severity).toLowerCase()}) ${i.title} — ${i.statusLabel}`),
       ] });
     }
   } else {

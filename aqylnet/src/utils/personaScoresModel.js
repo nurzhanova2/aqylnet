@@ -29,7 +29,14 @@ function quoteText(q, verified) {
   return verified === false ? `«${q}» (${QUOTE_UNVERIFIED})` : `«${q}»`;
 }
 
-export function buildPersonaScoresModel(scores) {
+/**
+ * Said instead of «не поняли решение» when the audience analysis found no
+ * decision to check against: «8 из 8 не поняли решение» on a news item read as
+ * a failure of the text, while the personas only said the document has none.
+ */
+export const NO_DECISION_SHARE = 'решения в документе нет — ответили «не понял»';
+
+export function buildPersonaScoresModel(scores, { noDecision = false } = {}) {
   if (!scores?.hasScores) return null;
   const criteria = scores.criteria;
   const label = (key) => criteria.find((c) => c.key === key)?.label ?? key;
@@ -48,7 +55,9 @@ export function buildPersonaScoresModel(scores) {
     sections: scores.stats.sections.map((s) => `${sectionTitle(s.order)}: ${criteria.filter((c) => !c.documentLevel).map((c) => `${c.n}. ${c.label}: ${fmtScore(s.cells[c.key]?.mean)}`).join('; ')}; вопросов без ответа: ${s.unanswered?.total ?? '—'}`),
     documentLine: `Документ в целом: ${line(Object.fromEntries(Object.entries(doc).map(([k, c]) => [k, c.mean])))}`,
     spreadLine: `Разброс между участниками (стандартное отклонение): ${criteria.map((c) => `${c.n}. ${fmtScore(doc[c.key]?.sd)}`).join('; ')}`,
-    groups: PERSONA_GROUPS.map((g) => `${GROUP_LABELS[g]}: ${line(Object.fromEntries(Object.entries(doc).map(([k, c]) => [k, c.byGroup[g]])))}`),
+    // A group with no one in the cast would be a line of dashes: left out.
+    groups: PERSONA_GROUPS.filter((g) => Object.values(doc).some((c) => c.byGroup[g] !== null))
+      .map((g) => `${GROUP_LABELS[g]}: ${line(Object.fromEntries(Object.entries(doc).map(([k, c]) => [k, c.byGroup[g]])))}`),
     gapLine: `Разница групп (максимум − минимум): ${criteria.map((c) => `${c.n}. ${fmtScore(doc[c.key]?.gap)}`).join('; ')}`,
     top: scores.stats.top.map((t) => [
       `${sectionTitle(t.order)} — ${label(t.key)}: разница ${fmtScore(t.gap)}`,
@@ -59,7 +68,9 @@ export function buildPersonaScoresModel(scores) {
     topTerms: scores.stats.topTerms
       ? `Расхождение по терминам (считает система): ${sectionTitle(scores.stats.topTerms.order)} — разница ${fmtScore(scores.stats.topTerms.gap)}; ${GROUP_LABELS[scores.stats.topTerms.high.group]} ${fmtScore(scores.stats.topTerms.high.mean)}, ${GROUP_LABELS[scores.stats.topTerms.low.group]} ${fmtScore(scores.stats.topTerms.low.mean)}`
       : '',
-    shares: `Не поняли, какое решение принято: ${scores.stats.shares.decisionCount} из ${scores.stats.shares.scored} (${pct(scores.stats.shares.decision)}); не поняли, что делать: ${scores.stats.shares.actionCount} из ${scores.stats.shares.scored} (${pct(scores.stats.shares.action)}).`,
+    shares: `${noDecision
+      ? `Решение: ${NO_DECISION_SHARE} ${scores.stats.shares.decisionCount} из ${scores.stats.shares.scored}`
+      : `Не поняли, какое решение принято: ${scores.stats.shares.decisionCount} из ${scores.stats.shares.scored} (${pct(scores.stats.shares.decision)})`}; не поняли, что делать: ${scores.stats.shares.actionCount} из ${scores.stats.shares.scored} (${pct(scores.stats.shares.action)}).`,
     readings: scores.personas.filter((p) => p.status === 'scored').map((p) => {
       const rs = p.documentLevels?.rateSignal;
       const signal = `сигнал о ставке ${fmtScore(p.rateSignal)}${rs?.why ? ` (${rs.why})` : ''}${rs?.adjusted ? ', балл приведён к уровню' : ''}`;

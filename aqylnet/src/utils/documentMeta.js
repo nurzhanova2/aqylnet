@@ -37,7 +37,10 @@ export function fmtDate(iso) {
 
 /** «Пресс-релиз · 04.09.2026» for the report header; '' when neither is set. */
 export function documentMetaLine(meta) {
-  return [docTypeLabel(meta?.docType), meta?.publishedAt ? fmtDate(meta.publishedAt) : null].filter(Boolean).join(' · ');
+  // «Другое» is a valid choice in the form but tells the reader nothing in a
+  // header («ОТЧЁТ · … · ДРУГОЕ · 04.11.2026»): the line names only a real type.
+  const type = meta?.docType && meta.docType !== 'other' ? docTypeLabel(meta.docType) : null;
+  return [type, meta?.publishedAt ? fmtDate(meta.publishedAt) : null].filter(Boolean).join(' · ');
 }
 
 /** The fields as the API takes them: an empty audience is «not set» — null. */

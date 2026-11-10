@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styles from './RewritesBlock.module.css';
 import { Banner, Dot, Eyebrow, Pill } from '../ReportAtoms/ReportAtoms';
 import { LAYERS, STALE_NOTE, buildFullModel, buildLayerModel, copyText } from '../../utils/rewriteModel';
+import { severityLabel } from '../../utils/issueLabels';
 
 // «Три версии текста» (A1 stage 3), laid out after «Отчёт — Graphite Green».
 // The text and every mark come from the server; nothing is checked here. A
@@ -37,7 +38,7 @@ function footnotes(pieces) {
     }),
   }));
   // Numbers first, then letters — as the footnotes read in the mockup.
-  const isNum = (k) => /^d+$/.test(k);
+  const isNum = (k) => /^\d+$/.test(k);
   notes.sort((x, y) => (isNum(x.key) === isNum(y.key) ? 0 : isNum(x.key) ? -1 : 1));
   return { pieces: withSups, notes };
 }
@@ -96,7 +97,9 @@ function shortChecks(layer, bounds) {
     ['Длина', `${s.chars} симв.`, s.withinVolume === false ? 'mid' : 'good'],
     ['Время чтения', `~${String(s.minutes).replace('.', ',')} мин`, 'none'],
     ['Заглушек', String(s.placeholders.length), s.placeholders.length ? 'mid' : 'none'],
-    ['Пометок', String(s.marks), 'none'],
+    // The server counts sentences with marks, not the marks: one sentence can
+    // carry two (a number and a letter), so «Пометок 5» stood over seven notes.
+    ['Фраз с пометками', String(s.marks), 'none'],
     ['«Проверить автору»', String(s.authorChecks ?? 0), (s.authorChecks ?? 0) ? 'mid' : 'none'],
   ];
   if (s.unsupported) rows.push(['Не подтверждено', String(s.unsupported), 'low']);
@@ -153,7 +156,7 @@ function FullLayer({ model, layer, onRunLayer, running }) {
   // One numbering for the version: the paragraph notes continue the summary's.
   const offset = blufNotes.filter((n) => /^\d+$/.test(n.key)).length;
   const renum = (k) => (/^\d+$/.test(k) ? String(Number(k) + offset) : k);
-  const isNum = (k) => /^d+$/.test(k);
+  const isNum = (k) => /^\d+$/.test(k);
   const notes = [...blufNotes, ...paraNotes.map((n) => ({ ...n, key: renum(n.key) }))]
     .sort((x, y) => (isNum(x.key) === isNum(y.key) ? 0 : isNum(x.key) ? -1 : 1));
   const shown = (onlyEdits ? paras.filter((p) => p.status !== 'same') : paras);
@@ -212,7 +215,7 @@ function FullLayer({ model, layer, onRunLayer, running }) {
       </div>
       {model.issues.length > 0 && (
         <div className={styles.issues}>
-          <Eyebrow>Замечания аудита High и Critical</Eyebrow>
+          <Eyebrow>Замечания аудита: высокие и критичные</Eyebrow>
           <p className={styles.muted}>
             Правка в абзаце с цитатой — {model.statusCounts.in_quote_paragraph}, не в том абзаце — {model.statusCounts.wrong_paragraph}, нет правки — {model.statusCounts.no_edit}.
             Статус говорит, где правка, а не что замечание исправлено.
@@ -221,7 +224,7 @@ function FullLayer({ model, layer, onRunLayer, running }) {
             {model.issues.map((i) => (
               <div key={i.id} className={styles.issueRow}>
                 <span className={styles.mono}>{i.id}</span>
-                <span className={styles.issueSev}>{i.severity}</span>
+                <span className={styles.issueSev}>{severityLabel(i.severity)}</span>
                 <span className={styles.issueTitle}>{i.title}</span>
                 <Pill tone={i.status === 'in_quote_paragraph' ? 'good' : i.status === 'wrong_paragraph' ? 'mid' : 'none'}>{i.statusLabel}</Pill>
               </div>

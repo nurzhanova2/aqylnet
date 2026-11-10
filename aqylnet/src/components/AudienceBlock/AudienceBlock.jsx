@@ -7,6 +7,7 @@ import {
   showReason, verdictLabel,
 } from '../../utils/audienceModel';
 import { QUOTE_UNVERIFIED } from '../../utils/reportTrust';
+import { countOf } from '../../utils/plural';
 
 // «Кому понятен текст» (A1 stage 2), laid out after «Отчёт — Graphite Green».
 // Group levels, the gap and the terms are the server's code; the reference,
@@ -91,7 +92,7 @@ export default function AudienceBlock({ audience, number, frame, anchor, running
   }
 
   const [lead, ...rest] = m?.headline ?? [];
-  const sub = [...rest.filter((h) => h !== AUDIENCE_HINT), ...(m?.hasAudience && m?.phrase ? [m.phrase] : [])].join(' ');
+  const sub = [...rest.filter((h) => h !== AUDIENCE_HINT), ...(m?.extraPhrase ? [m.extraPhrase] : [])].join(' ');
 
   return (
     <section className={frame.section} id={anchor}>
@@ -210,7 +211,7 @@ export default function AudienceBlock({ audience, number, frame, anchor, running
                       <summary className={styles.gapSum}>
                         <Chevron />
                         <span className={styles.gapName}>{g.label}</span>
-                        <span className={styles.gapCount}>{g.status === 'ok' ? `${g.items.length} ${g.items.length === 1 ? 'пункт' : g.items.length < 5 ? 'пункта' : 'пунктов'}` : 'нет данных'}</span>
+                        <span className={styles.gapCount}>{g.status === 'ok' ? countOf(g.items.length, 'пункт', 'пункта', 'пунктов') : 'нет данных'}</span>
                         <span className={styles.spacer} />
                         <span className={styles.gapTerms}>непонятных терминов <span className={styles.mono}>{termCount}</span></span>
                       </summary>

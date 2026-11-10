@@ -43,6 +43,13 @@ describe('audience model', () => {
     expect(m.groups[1]).toMatchObject({ target: false, share: '50 %', tone: 'good' });
   });
 
+  it('the groups phrase is not repeated when the gap already named the best group', () => {
+    expect(buildAudienceModel(dto).extraPhrase).toBe(null);
+    expect(audienceExportLines(dto).headline.filter((h) => /лучше всего/i.test(h))).toHaveLength(1);
+    const noShift = buildAudienceModel({ ...dto, gap: { ...dto.gap, shift: null } });
+    expect(noShift.extraPhrase).toBe(dto.phrase);
+  });
+
   it('without an audience: the groups phrase and the hint, no gap', () => {
     const m = buildAudienceModel({ ...dto, document: { ...dto.document, intendedAudience: [] }, gap: null });
     expect(m.headline).toEqual([dto.phrase, AUDIENCE_HINT]);

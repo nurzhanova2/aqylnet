@@ -3,7 +3,7 @@ import styles from './PersonaScoresBlock.module.css';
 import ChibiBadge from '../ChibiAvatar/ChibiBadge';
 import { Bar, Chevron, Dot, Eyebrow, heatOf10 } from '../ReportAtoms/ReportAtoms';
 import { GROUP_LABELS, PERSONA_GROUPS, groupLabel } from '../../utils/personaGroups';
-import { NOT_SCORED, fmtScore } from '../../utils/personaScoresModel';
+import { NOT_SCORED, NO_DECISION_SHARE, fmtScore } from '../../utils/personaScoresModel';
 import { QUOTE_UNVERIFIED } from '../../utils/reportTrust';
 
 // «Оценки участников» (A1 stage 1), laid out after «Отчёт — Graphite Green».
@@ -74,7 +74,7 @@ function Kpi({ value, of, label, tone }) {
 
 const TABS = [['groups', 'Группы'], ['people', 'Участники'], ['sections', 'Разделы'], ['read', 'Что понял каждый']];
 
-export default function PersonaScoresBlock({ scores, number, frame, anchor, running, error, onRun, hasDocument }) {
+export default function PersonaScoresBlock({ scores, number, frame, anchor, running, error, onRun, hasDocument, noDecision = false }) {
   const [tab, setTab] = useState('groups');
   const has = scores?.hasScores;
   const sectionTitle = (order) => scores?.sections.find((s) => s.order === order)?.title ?? `Раздел ${order + 1}`;
@@ -112,7 +112,9 @@ export default function PersonaScoresBlock({ scores, number, frame, anchor, runn
         {has && (
           <>
             <div className={styles.kpis}>
-              <Kpi value={shares.decisionCount} of={shares.scored} label="не поняли решение" tone={shares.decisionCount ? 'mid' : 'good'} />
+              {noDecision
+                ? <Kpi value={shares.decisionCount} of={shares.scored} label={NO_DECISION_SHARE} tone="none" />
+                : <Kpi value={shares.decisionCount} of={shares.scored} label="не поняли решение" tone={shares.decisionCount ? 'mid' : 'good'} />}
               <Kpi value={shares.actionCount} of={shares.scored} label="не поняли, что делать" tone={shares.actionCount ? 'mid' : 'good'} />
               <Kpi value={shares.scored} of={all} label="оценили документ" tone={shares.scored === all ? 'good' : 'mid'} />
               <Kpi value={quotes.verified} of={quotes.total} label="цитат найдено дословно" tone={quotes.verified === quotes.total ? 'good' : 'mid'} />
@@ -138,7 +140,8 @@ export default function PersonaScoresBlock({ scores, number, frame, anchor, runn
                 <div className={styles.scroll}>
                   <div className={styles.grid}>
                     <CritHead criteria={scores.criteria} first="Группа" />
-                    {PERSONA_GROUPS.map((g) => (
+                    {/* A group with no one in the cast is a row of dashes: not shown. */}
+                    {PERSONA_GROUPS.filter((g) => scores.criteria.some((c) => scores.stats.document[c.key].byGroup[g] !== null)).map((g) => (
                       <div key={g} className={styles.gridRow} style={{ '--cols': scores.criteria.length }}>
                         <span className={styles.rowName}>{GROUP_LABELS[g]}</span>
                         {scores.criteria.map((c) => <Heat key={c.key} value={scores.stats.document[c.key].byGroup[g]} />)}
